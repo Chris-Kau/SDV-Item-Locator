@@ -16,6 +16,8 @@ namespace Item_Locator
         {
             //Opens up the custom menu
             helper.Events.Input.ButtonPressed += this.OpenItemMenu;
+
+            helper.Events.Display.WindowResized += this.Bleh;
         }
 
 
@@ -30,12 +32,18 @@ namespace Item_Locator
             // ignore if player hasn't loaded a save yet
             if (!Context.IsWorldReady)
                 return;
-            if(e.Button is SButton.O && Game1.activeClickableMenu is null)
+            if(e.Button is SButton.O && Game1.activeClickableMenu is null && Context.IsPlayerFree)
             {
+                Game1.activeClickableMenu = new CustomItemMenu();
                 // print button presses to the console window
                 this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
             }
 
+        }
+
+        private void Bleh(object? sender, WindowResizedEventArgs e)
+        {
+            Console.WriteLine($"{Game1.viewport.Width}, {Game1.viewport.Height}");
         }
     }
 }
