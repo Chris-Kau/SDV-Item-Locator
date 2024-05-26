@@ -14,7 +14,8 @@ namespace YourProjectName
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
-            helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            //Opens up the custom menu
+            helper.Events.Input.ButtonPressed += this.OpenItemMenu;
         }
 
 
@@ -24,14 +25,17 @@ namespace YourProjectName
         /// <summary>Raised after the player presses a button on the keyboard, controller, or mouse.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
-        private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+        private void OpenItemMenu(object? sender, ButtonPressedEventArgs e)
         {
             // ignore if player hasn't loaded a save yet
             if (!Context.IsWorldReady)
                 return;
+            if(e.Button is SButton.O && Game1.activeClickableMenu is null)
+            {
+                // print button presses to the console window
+                this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
+            }
 
-            // print button presses to the console window
-            this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
         }
     }
 }
