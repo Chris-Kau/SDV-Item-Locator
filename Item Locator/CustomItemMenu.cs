@@ -1,13 +1,16 @@
-﻿using StardewValley;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using StardewModdingAPI;
+using StardewModdingAPI.Events;
+using StardewValley;
+using StardewValley.Menus;
 namespace Item_Locator
 {
-    internal class CustomItemMenu
+    public class CustomItemMenu : IClickableMenu
     {
+        static int UIWidth = 632;
+        static int UIHeight = 600;
+        static int xPos = (int)((Game1.viewport.Width * Game1.options.zoomLevel / Game1.options.uiScale / 2) - (UIWidth / 2));
+        static int yPos = (int)((Game1.viewport.Height * Game1.options.zoomLevel / Game1.options.uiScale / 2) - UIHeight);
+
+
     }
 }

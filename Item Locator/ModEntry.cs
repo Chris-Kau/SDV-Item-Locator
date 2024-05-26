@@ -2,7 +2,7 @@
 using StardewModdingAPI.Events;
 using StardewValley;
 
-namespace YourProjectName
+namespace Item_Locator
 {
     /// <summary>The mod entry point.</summary>
     internal sealed class ModEntry : Mod
