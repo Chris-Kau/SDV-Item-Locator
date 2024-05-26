@@ -51,6 +51,10 @@ namespace Item_Locator
                 Console.WriteLine($"YPI C:COELD ON THET EXTXBOX");
                 getItemID.Selected = true;
             }
+            else
+            {
+                getItemID.Selected = false;
+            }
 
 
         }
