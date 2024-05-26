@@ -9,6 +9,7 @@ namespace Item_Locator
 {
     public class CustomItemMenu : IClickableMenu
     {
+        public static Item? SearchedItem;
         static int UIWidth = 632;
         static int UIHeight = 600;
         //Takes user's zoomlevel and uiscale into account to center menu based off user's settings too
@@ -24,20 +25,19 @@ namespace Item_Locator
         {
             TitleLabel = new ClickableComponent(new Rectangle(xPos + 200, yPos + 96, UIWidth - 400, 64), "Item Locator");
             MenuDesc = new ClickableComponent(new Rectangle(xPos + 200, yPos + 150, UIWidth - 400, 64), "Enter Item ID");
-            getItemID = new TextBox(null, null, Game1.dialogueFont, Game1.textColor)
+            getItemID = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), Game1.smallFont, Game1.textColor)
             {
                 X = MenuDesc.bounds.X,
                 Y = MenuDesc.bounds.Y + MenuDesc.bounds.Height + 50,
                 Width = MenuDesc.bounds.Width,
-                Height = 64
             };
-            
-            getItemID.OnEnterPressed += test;
+            getItemID.OnEnterPressed += EnterPressed;
         }
 
-        private void test(TextBox sender)
+        private void EnterPressed(TextBox sender)
         {
             Console.WriteLine($"User entered: {sender.Text}");
+            SearchedItem = new StardewValley.Object(sender.Text, 1);
         }
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {

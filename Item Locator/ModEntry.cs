@@ -39,6 +39,9 @@ namespace Item_Locator
                 this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
             }
 
+            if (e.Button is SButton.P && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
+                Console.WriteLine($"{CustomItemMenu.SearchedItem.Name}");
+
         }
 
         private void Bleh(object? sender, WindowResizedEventArgs e)
