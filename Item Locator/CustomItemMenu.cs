@@ -41,10 +41,6 @@ namespace Item_Locator
         }
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
-            if(TitleLabel.containsPoint(x,y))
-                Console.WriteLine($"{xPos}, YOU CLCIEDK ON THE TIETE");
-            if (MenuDesc.containsPoint(x, y))
-                Console.WriteLine($"YOU CLCIEDK ON THE DESCI");
             getItemIDRect = new Rectangle(getItemID.X, getItemID.Y, getItemID.Width, getItemID.Height);
             if (getItemIDRect.Contains(x, y))
             {
@@ -55,8 +51,6 @@ namespace Item_Locator
             {
                 getItemID.Selected = false;
             }
-
-
         }
 
         public override void draw(SpriteBatch b)
