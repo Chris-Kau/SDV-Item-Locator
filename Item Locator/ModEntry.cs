@@ -1,6 +1,7 @@
 ﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using Microsoft.Xna.Framework;
 
 namespace Item_Locator
 {
@@ -29,6 +30,9 @@ namespace Item_Locator
         /// <param name="e">The event data.</param>
         private void OpenItemMenu(object? sender, ButtonPressedEventArgs e)
         {
+            GameLocation playerloc = Game1.player.currentLocation;
+            List<Vector2> temp;
+
             // ignore if player hasn't loaded a save yet
             if (!Context.IsWorldReady)
                 return;
@@ -40,7 +44,13 @@ namespace Item_Locator
             }
 
             if (e.Button is SButton.P && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
-                Console.WriteLine($"{CustomItemMenu.SearchedItem.Name}");
+            {
+                temp = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
+                foreach(Vector2 loc in temp)
+                {
+                    Console.WriteLine($"{loc.X} {loc.Y}");
+                }
+            }
 
         }
 
