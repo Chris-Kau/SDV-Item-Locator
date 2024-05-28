@@ -42,6 +42,7 @@ namespace Item_Locator
         {
             GameLocation playerloc = Game1.player.currentLocation;
             List<Vector2> temp;
+            List<Vector2> temp2;
 
             // ignore if player hasn't loaded a save yet
             if (!Context.IsWorldReady)
@@ -60,7 +61,15 @@ namespace Item_Locator
                 {
                     Console.WriteLine($"{loc.X} {loc.Y}");
                 }
+
+                temp2 = Path_Finding.Find_Empty_Tiles(playerloc);
+                foreach(Vector2 loc2 in temp2)
+                {
+                    Console.WriteLine($"Empty: {loc2.X}, {loc2.Y}");
+                }
             }
+            if (e.Button is SButton.J && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
+                Console.WriteLine($"Mouse cursor: {Game1.currentCursorTile}");
 
         }
 
