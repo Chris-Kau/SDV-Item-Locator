@@ -17,7 +17,6 @@ namespace Item_Locator
         {
             //Opens up the custom menu
             helper.Events.Input.ButtonPressed += this.OpenItemMenu;
-
             helper.Events.Display.WindowResized += this.Bleh;
         }
 
@@ -56,7 +55,10 @@ namespace Item_Locator
 
         private void Bleh(object? sender, WindowResizedEventArgs e)
         {
-            Console.WriteLine($"{Game1.viewport.Width}, {Game1.viewport.Height}");
+            if(Game1.activeClickableMenu is CustomItemMenu)
+            {
+                Game1.activeClickableMenu = new CustomItemMenu();
+            }
         }
     }
 }
