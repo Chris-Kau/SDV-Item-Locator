@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Item_Locator
 {
-    public class Dijkstras
+    public class Path_Finding
     {
     }
 }
