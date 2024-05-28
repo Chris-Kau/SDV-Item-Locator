@@ -64,10 +64,5 @@ namespace Item_Locator
             getItemID.Draw(b);
             drawMouse(b);
         }
-
-        public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
-        {
-            xPos = (int)((Game1.viewport.Width * Game1.options.zoomLevel / Game1.options.uiScale / 2) - (UIWidth / 2));
-        }
     }
 }
