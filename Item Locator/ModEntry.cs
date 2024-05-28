@@ -54,6 +54,7 @@ namespace Item_Locator
                 this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
             }
 
+            // Keybinds P and J are meant for debugging.
             if (e.Button is SButton.P && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
             {
                 temp = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);

@@ -15,7 +15,7 @@ namespace Item_Locator
             {
                 for(int y = 0; y < location.map.Layers[0].LayerHeight; y++)
                 {
-                    //checks to see if the x,y is a valid tile and checks to see if there is a chest object on said tile.
+                    //checks to see if the there is an object at x,y and checks to see if there is a chest object on said tile.
                     if(location.objects.ContainsKey(new Vector2(x, y)) && location.Objects[new Vector2(x,y)] is StardewValley.Objects.Chest chest)
                     {
                         //if we found a match in item names, add it to the chest_locs list
