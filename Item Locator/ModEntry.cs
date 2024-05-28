@@ -2,6 +2,7 @@
 using StardewModdingAPI.Events;
 using StardewValley;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Item_Locator
 {
@@ -17,7 +18,9 @@ namespace Item_Locator
         {
             //Opens up the custom menu
             helper.Events.Input.ButtonPressed += this.OpenItemMenu;
-            helper.Events.Display.WindowResized += this.Bleh;
+            //resizes menu on window resize
+            helper.Events.Display.WindowResized += this.resizeCustomMenu;
+            helper.Events.Display.RenderedWorld += this.test;
         }
 
 
@@ -27,6 +30,14 @@ namespace Item_Locator
         /// <summary>Raised after the player presses a button on the keyboard, controller, or mouse.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
+        /// 
+        private void test(object? sender, RenderedWorldEventArgs e)
+        {
+            Vector2 temp = new Vector2(68, 20);
+            Vector2 screenpos = Game1.GlobalToLocal(Game1.viewport, temp * Game1.tileSize);
+            e.SpriteBatch.Draw(Game1.bobbersTexture, screenpos, Color.Black);
+
+        }
         private void OpenItemMenu(object? sender, ButtonPressedEventArgs e)
         {
             GameLocation playerloc = Game1.player.currentLocation;
@@ -53,7 +64,7 @@ namespace Item_Locator
 
         }
 
-        private void Bleh(object? sender, WindowResizedEventArgs e)
+        private void resizeCustomMenu(object? sender, WindowResizedEventArgs e)
         {
             if(Game1.activeClickableMenu is CustomItemMenu)
             {
