@@ -23,5 +23,42 @@ namespace Item_Locator
             }
             return Empty_Tiles;
         }
+
+
+
+        public class Point
+        {
+            public int X; public int Y;
+            public Point(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj is Point point)
+                {
+                    return X == point.X && Y == point.Y; ;
+                }
+                return false;
+            }
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(X,Y);
+            }
+        }
+
+        // public static double ComputeEuclideanDist(Point a, Point b)
+        public static int[,] genAdjMatrix(List<Point> points, double threshold)
+        {
+            int n = points.Count;
+            int[,] graph = new int[n, n]; // automatically filled with 0s
+
+
+
+            return graph;
+        }
+
+
     }
 }
