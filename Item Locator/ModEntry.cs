@@ -70,7 +70,11 @@ namespace Item_Locator
                 }
             }
             if (e.Button is SButton.J && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
+            {
                 Console.WriteLine($"Mouse cursor: {Game1.currentCursorTile}");
+                Path_Finding.genAdjMatrix();
+            }
+
 
         }
 
