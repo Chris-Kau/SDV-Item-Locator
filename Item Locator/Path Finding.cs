@@ -1,5 +1,6 @@
 ﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using System.Collections.Generic;
 using StardewValley;
 using Microsoft.Xna.Framework;
 
@@ -49,11 +50,11 @@ namespace Item_Locator
         }
 
         // public static double ComputeEuclideanDist(Point a, Point b)
-        public static int[,] genAdjMatrix(List<Point> points, double threshold)
+        public static List<Vector2> genAdjMatrix()
         {
-            int n = points.Count;
-            int[,] graph = new int[n, n]; // automatically filled with 0s
-                                          // note that this is diff from x by y table, it's a point by point table
+            /*int n = points.Count;
+            int[,] graph = new int[n, n];*/ // automatically filled with 0s
+                                            // note that this is diff from x by y table, it's a point by point table
 
             // assign a point to each index of graph somehow. dictionary or list probably so we know which is which
             // making the graph a point graph instead of an int graph doesnt work. those table nums are supposed to be ints, the indexes are still ints
@@ -61,7 +62,60 @@ namespace Item_Locator
 
             // no corners right. yeah.
 
-            return graph;
+            //key : value
+            //[5,5] : [[5,4], [5,6], [4,5], [6,5]]
+
+            //Creates adj_list with the key being the point and the value being all connected points
+            GameLocation player_loc = Game1.player.currentLocation;
+            Dictionary<Vector2, List<Vector2>> adj_list = new Dictionary<Vector2, List<Vector2>>();
+            List<Vector2> empty_tiles = Find_Empty_Tiles(player_loc);
+            foreach (Vector2 p in empty_tiles)
+            {
+                List<Vector2> temp = [];
+                foreach (Vector2 o in empty_tiles)
+                {
+                    if ((new Vector2(p.X - 1, p.Y)) == o)
+                    {
+                        temp.Add(o);
+                    }
+                    if ((new Vector2(p.X + 1, p.Y)) == o)
+                    {
+                        temp.Add(o);
+                    }
+                    if ((new Vector2(p.X, p.Y + 1)) == o)
+                    {
+                        temp.Add(o);
+                    }
+                    if ((new Vector2(p.X, p.Y - 1)) == o)
+                    {
+                        temp.Add(o);
+                    }
+
+                    if (temp.Count == 4)
+                    {
+                        break;
+                    }
+                }
+                adj_list.Add(p, temp);
+            }
+
+            //prints out for debugging/testing (REMOVE LATER)
+            foreach (KeyValuePair<Vector2, List<Vector2>> pair in adj_list)
+            {
+                Console.Write($"{pair.Key.X}, {pair.Key.Y} : ");
+                foreach(Vector2 point in pair.Value)
+                {
+                    Console.Write($"({point.X}, {point.Y}), ");
+                }
+                Console.WriteLine(' ');
+            }
+
+            //IMPLEMENT DIJKSTRAS HERE
+
+
+            return empty_tiles;
+
+            
         }
 
 
