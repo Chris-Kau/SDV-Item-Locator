@@ -53,8 +53,13 @@ namespace Item_Locator
         {
             int n = points.Count;
             int[,] graph = new int[n, n]; // automatically filled with 0s
+                                          // note that this is diff from x by y table, it's a point by point table
+
+            // assign a point to each index of graph somehow. dictionary or list probably so we know which is which
+            // making the graph a point graph instead of an int graph doesnt work. those table nums are supposed to be ints, the indexes are still ints
 
 
+            // no corners right. yeah.
 
             return graph;
         }
