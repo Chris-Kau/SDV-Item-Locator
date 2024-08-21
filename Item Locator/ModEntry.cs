@@ -42,7 +42,7 @@ namespace Item_Locator
         {
             GameLocation playerloc = Game1.player.currentLocation;
             List<Vector2> validChestLocs;
-            List<Vector2> validEmptyTiles;
+
 
             // ignore if player hasn't loaded a save yet
             if (!Context.IsWorldReady)
@@ -80,8 +80,8 @@ namespace Item_Locator
             if(e.Button is SButton.H && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
             {
                 Vector2 playerTileLoc = Game1.player.Tile;
+                Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjMatrix(); ;
                 validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
-                validEmptyTiles = Path_Finding.Find_Empty_Tiles(playerloc);
                 List<Vector2> path = Path_Finding.dijkstras(validEmptyTiles, validChestLocs, playerTileLoc);
             }
 
