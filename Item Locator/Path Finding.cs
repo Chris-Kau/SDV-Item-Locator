@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using StardewValley;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Priority_Queue;
 
 namespace Item_Locator
 {
@@ -116,51 +115,7 @@ namespace Item_Locator
         public static List<Vector2> dijkstras(Dictionary<Vector2, List<Vector2>> adjlist, List<Vector2> targets, Vector2 playerLocation)
         {
             Vector2 start = playerLocation;
-            Vector2 closestTarget = targets[0];
             List<Vector2> tilepath = new List<Vector2>();
-            var priorityQueue = new SimplePriorityQueue<Vector2, float>();
-            var distances = new Dictionary<Vector2, float>();
-            var previous = new Dictionary<Vector2, Vector2?>();
-
-            // Initialize distances, inf for all tiles but start
-            foreach(var tile in adjlist.Keys)
-            {
-                distances[tile] = float.MaxValue;
-                previous[tile] = null;
-            }
-
-            distances[start] = 0;
-            priorityQueue.Enqueue(start, 0);
-
-            // Dijkstra's
-            while (priorityQueue.Count > 0)
-            {
-                var currentTile = priorityQueue.Dequeue();
-
-                //if target is reached, break out of loop
-                if (targets.Contains(currentTile))
-                {
-                    closestTarget = currentTile;
-                    break;
-                }
-
-                foreach(var neighbor in adjlist[currentTile])
-                {
-                    float newDistance = distances[currentTile] + 1;
-
-                    if(newDistance < distances[neighbor])
-                    {
-                        distances[neighbor] = newDistance;
-                        previous[neighbor] = currentTile;
-                        priorityQueue.Enqueue(neighbor, newDistance);
-                    }
-                }
-            }
-            //testing
-            foreach (var i in previous)
-            {
-                Console.WriteLine("Previous!", i);
-            }
             return tilepath;
         }
     }
