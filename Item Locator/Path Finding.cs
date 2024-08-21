@@ -100,7 +100,7 @@ namespace Item_Locator
             }
 
             //prints out for debugging/testing (REMOVE LATER)
-            foreach (KeyValuePair<Vector2, List<Vector2>> pair in adj_list)
+/*            foreach (KeyValuePair<Vector2, List<Vector2>> pair in adj_list)
             {
                 Console.Write($"{pair.Key.X}, {pair.Key.Y} : ");
                 foreach(Vector2 point in pair.Value)
@@ -108,16 +108,15 @@ namespace Item_Locator
                     Console.Write($"({point.X}, {point.Y}), ");
                 }
                 Console.WriteLine(' ');
-            }
-
-            //IMPLEMENT DIJKSTRAS HERE
-
-
-            return empty_tiles;
-
-            
+            }*/
+            return empty_tiles;  
         }
+        public static List<Vector2> dijkstras(List<Vector2> adjlist, List<Vector2> targets, Vector2 playerLocation)
+        {
+            Vector2 start = playerLocation;
+            List<Vector2> tilepath = new List<Vector2>();
 
-
+            return tilepath;
+        }
     }
 }

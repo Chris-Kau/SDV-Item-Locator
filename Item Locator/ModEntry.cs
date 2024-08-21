@@ -41,8 +41,8 @@ namespace Item_Locator
         private void OpenItemMenu(object? sender, ButtonPressedEventArgs e)
         {
             GameLocation playerloc = Game1.player.currentLocation;
-            List<Vector2> temp;
-            List<Vector2> temp2;
+            List<Vector2> validChestLocs;
+            List<Vector2> validEmptyTiles;
 
             // ignore if player hasn't loaded a save yet
             if (!Context.IsWorldReady)
@@ -54,25 +54,35 @@ namespace Item_Locator
                 this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
             }
 
-            // Keybinds P and J are meant for debugging.
-            if (e.Button is SButton.P && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
+            // Keybinds U and J are meant for debugging.
+            // J prints out the available tiles the player can walk in.
+            // U prints out the chest locations
+            if (e.Button is SButton.U && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
             {
-                temp = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
-                foreach(Vector2 loc in temp)
+                validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
+                foreach(Vector2 loc in validChestLocs)
                 {
                     Console.WriteLine($"{loc.X} {loc.Y}");
                 }
 
-                temp2 = Path_Finding.Find_Empty_Tiles(playerloc);
+                /*temp2 = Path_Finding.Find_Empty_Tiles(playerloc);
                 foreach(Vector2 loc2 in temp2)
                 {
                     Console.WriteLine($"Empty: {loc2.X}, {loc2.Y}");
-                }
+                }*/
             }
             if (e.Button is SButton.J && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
             {
                 Console.WriteLine($"Mouse cursor: {Game1.currentCursorTile}");
                 Path_Finding.genAdjMatrix();
+            }
+
+            if(e.Button is SButton.H && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
+            {
+                Vector2 playerTileLoc = Game1.player.Tile;
+                validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
+                validEmptyTiles = Path_Finding.Find_Empty_Tiles(playerloc);
+                List<Vector2> path = Path_Finding.dijkstras(validEmptyTiles, validChestLocs, playerTileLoc);
             }
 
 
