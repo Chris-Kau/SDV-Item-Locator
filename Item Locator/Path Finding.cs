@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using StardewValley;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System.Collections;
 
 namespace Item_Locator
 {
@@ -51,7 +53,7 @@ namespace Item_Locator
         }
 
         // public static double ComputeEuclideanDist(Point a, Point b)
-        public static Dictionary<Vector2, List<Vector2>> genAdjMatrix()
+        public static Dictionary<Vector2, List<Vector2>> genAdjMatrix(Vector2 target)
         {
             /*int n = points.Count;
             int[,] graph = new int[n, n];*/ // automatically filled with 0s
@@ -62,7 +64,7 @@ namespace Item_Locator
 
 
             // no corners right. yeah.
-
+            
             //key : value
             //[5,5] : [[5,4], [5,6], [4,5], [6,5]]
 
@@ -70,6 +72,7 @@ namespace Item_Locator
             GameLocation player_loc = Game1.player.currentLocation;
             Dictionary<Vector2, List<Vector2>> adj_list = new Dictionary<Vector2, List<Vector2>>();
             List<Vector2> empty_tiles = Find_Empty_Tiles(player_loc);
+            empty_tiles.Add(target);
             foreach (Vector2 p in empty_tiles)
             {
                 List<Vector2> temp = [];
@@ -100,23 +103,88 @@ namespace Item_Locator
                 adj_list.Add(p, temp);
             }
 
-            //prints out for debugging/testing (REMOVE LATER)
-/*            foreach (KeyValuePair<Vector2, List<Vector2>> pair in adj_list)
-            {
-                Console.Write($"{pair.Key.X}, {pair.Key.Y} : ");
-                foreach(Vector2 point in pair.Value)
-                {
-                    Console.Write($"({point.X}, {point.Y}), ");
-                }
-                Console.WriteLine(' ');
-            }*/
             return adj_list;  
         }
-        public static List<Vector2> dijkstras(Dictionary<Vector2, List<Vector2>> adjlist, List<Vector2> targets, Vector2 playerLocation)
+        public static List<List<Vector2>> FindPathBFS(Dictionary<Vector2, List<Vector2>> adjlist, List<Vector2> targets, Vector2 playerLocation)
         {
-            Vector2 start = playerLocation;
-            List<Vector2> tilepath = new List<Vector2>();
-            return tilepath;
+            var start = playerLocation;
+            var paths = new List<List<Vector2>>();
+            var target = targets[0];
+            //Console.WriteLine("Target: " + target + target.X + target.Y);
+            var previous = solve(start, target, adjlist);
+ /*           foreach(var key in previous.Keys)
+            {
+                Console.WriteLine("PREVIOUS!! " + key + previous[key]);
+            }*/
+            paths.Add(reconstructPath(start, target, previous));
+/*            foreach(var tile in paths[0])
+            {
+                Console.WriteLine($"Path!: {tile}");
+            }*/
+            return paths;
+           
+        }
+
+        private static Dictionary<Vector2, Vector2?> solve(Vector2 start, Vector2 target, Dictionary<Vector2, List<Vector2>> adjlist)
+        {
+            //List<Vector2> path = new();
+            Queue<Vector2> queue = new Queue<Vector2>();
+            queue.Enqueue(start);
+            Dictionary<Vector2, bool> visited = new();
+            Dictionary<Vector2, Vector2?> prev = new(); // prev helps us reconstruct path, tracks who the parent of a tile is
+            //set all visited tiles to false except for the start (player's location) tile
+            //and set all prev tiles to null 
+            foreach (var tile in adjlist.Keys)
+            {
+                if (tile == start){
+                    visited[start] = true;
+                }else
+                {
+                    visited[tile] = false;
+                }
+                prev[tile] = null;
+            }
+            prev[target] = null;
+            while(queue.Count > 0)
+            {
+                Vector2 node = queue.Dequeue();
+                List<Vector2> neighbors = adjlist[node];
+                foreach (var neighbor in neighbors)
+                {
+                    //Console.WriteLine("NEIGHBOR!! " + neighbor);
+                    if (visited[neighbor] == false)
+                    {
+                        queue.Enqueue(neighbor);
+                        visited[neighbor] = true;
+                        prev[neighbor] = node;
+                    }
+                }
+            }
+            //Console.WriteLine("Successfully return prev in solve()");
+            return prev;
+        }
+
+        private static List<Vector2> reconstructPath(Vector2 start, Vector2 end, Dictionary<Vector2, Vector2?> prev)
+        {
+            List<Vector2> path = new();
+            for(Vector2? e = end; e != null; e = prev[e.Value] ?? null)
+            {
+                if (e == null)
+                {
+                    break;
+                }
+                Console.WriteLine($"E: {e}");
+                path.Add(e.Value);
+            }
+            path.Reverse();
+
+            if (path[0] == start)
+            {
+                //Console.WriteLine("Successfully returned path in reconstructPath()");
+                return path;
+            }
+            //Console.WriteLine("returned empty path in reconstructPath()");
+            return new List<Vector2>();
         }
     }
 }
