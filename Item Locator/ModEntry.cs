@@ -12,15 +12,20 @@ namespace Item_Locator
         /*********
         ** Public methods
         *********/
+        List<List<Vector2>> path = new();
+        Texture2D? tileHighlight;
+        bool shouldDraw = false;
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
             //Opens up the custom menu
+            tileHighlight = helper.ModContent.Load<Texture2D>("/assets/tileColor.png");
+   
             helper.Events.Input.ButtonPressed += this.OpenItemMenu;
             //resizes menu on window resize
             helper.Events.Display.WindowResized += this.resizeCustomMenu;
-            helper.Events.Display.RenderedWorld += this.test;
+            helper.Events.Display.RenderedWorld += this.RenderedWorld;
         }
 
 
@@ -31,12 +36,21 @@ namespace Item_Locator
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
         /// 
-        private void test(object? sender, RenderedWorldEventArgs e)
+        private void RenderedWorld(object? sender, RenderedWorldEventArgs e)
         {
-            Vector2 temp = new Vector2(68, 20);
-            Vector2 screenpos = Game1.GlobalToLocal(Game1.viewport, temp * Game1.tileSize);
-            e.SpriteBatch.Draw(Game1.bobbersTexture, screenpos, Color.Black);
+            if(path.Count > 0)
+            {
+                DrawPath(e, path);
+            }
 
+        }
+        private void DrawPath(RenderedWorldEventArgs e, List<List<Vector2>> path)
+        {
+            foreach (var i in path[0])
+            {
+                Vector2 screenpos = Game1.GlobalToLocal(Game1.viewport, i * Game1.tileSize);
+                e.SpriteBatch.Draw(tileHighlight, screenpos, Color.White);
+            }
         }
         private void OpenItemMenu(object? sender, ButtonPressedEventArgs e)
         {
@@ -74,18 +88,27 @@ namespace Item_Locator
             if (e.Button is SButton.J && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
             {
                 Console.WriteLine($"Mouse cursor: {Game1.currentCursorTile}");
-                Path_Finding.genAdjMatrix();
             }
 
-            if(e.Button is SButton.H && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
+            if(e.Button is SButton.N && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
             {
                 Vector2 playerTileLoc = Game1.player.Tile;
-                Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjMatrix(); ;
+                
                 validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
-                List<Vector2> path = Path_Finding.dijkstras(validEmptyTiles, validChestLocs, playerTileLoc);
+                if (validChestLocs.Count > 0)
+                {
+                    Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjMatrix(validChestLocs[0]);
+                    foreach (var i in validChestLocs)
+                    {
+                        Console.WriteLine("Chest Locs" + i);
+                    }
+                    Console.WriteLine("YOU PRESSED N");
+                    path = Path_Finding.FindPathBFS(validEmptyTiles, validChestLocs, playerTileLoc);
+                }else
+                {
+                    path.Clear();
+                }
             }
-
-
         }
 
         private void resizeCustomMenu(object? sender, WindowResizedEventArgs e)
