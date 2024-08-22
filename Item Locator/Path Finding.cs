@@ -53,7 +53,7 @@ namespace Item_Locator
         }
 
         // public static double ComputeEuclideanDist(Point a, Point b)
-        public static Dictionary<Vector2, List<Vector2>> genAdjMatrix(Vector2 target)
+        public static Dictionary<Vector2, List<Vector2>> genAdjList(Vector2 target)
         {
             /*int n = points.Count;
             int[,] graph = new int[n, n];*/ // automatically filled with 0s
@@ -72,7 +72,7 @@ namespace Item_Locator
             GameLocation player_loc = Game1.player.currentLocation;
             Dictionary<Vector2, List<Vector2>> adj_list = new Dictionary<Vector2, List<Vector2>>();
             List<Vector2> empty_tiles = Find_Empty_Tiles(player_loc);
-            empty_tiles.Add(target);
+            empty_tiles.Add(target); //add the chest to the list of empty tiles to allow pathfind to it.
             foreach (Vector2 p in empty_tiles)
             {
                 List<Vector2> temp = [];
@@ -109,29 +109,27 @@ namespace Item_Locator
         {
             var start = playerLocation;
             var paths = new List<List<Vector2>>();
+            //NEED TO MAKE CHANGES TO SUPPORT MULTIPLE TARGETS (CHESTS)
+            //instead of target being the first value in targets, we need to
+            //make a forloop that loops through each target and adds the path list to var paths.
             var target = targets[0];
-            //Console.WriteLine("Target: " + target + target.X + target.Y);
-            var previous = solve(start, target, adjlist);
- /*           foreach(var key in previous.Keys)
-            {
-                Console.WriteLine("PREVIOUS!! " + key + previous[key]);
-            }*/
-            paths.Add(reconstructPath(start, target, previous));
-/*            foreach(var tile in paths[0])
-            {
-                Console.WriteLine($"Path!: {tile}");
-            }*/
+
+            var previous = solve(start, target, adjlist); // put in for loop
+            paths.Add(reconstructPath(start, target, previous)); //put in for loop
+
+            //NEED TO MAKE CHANGES IN ModEntry.cs DrawPath() to have a nested for loop to go through all list of path lists.
             return paths;
            
         }
 
         private static Dictionary<Vector2, Vector2?> solve(Vector2 start, Vector2 target, Dictionary<Vector2, List<Vector2>> adjlist)
         {
-            //List<Vector2> path = new();
+
             Queue<Vector2> queue = new Queue<Vector2>();
             queue.Enqueue(start);
-            Dictionary<Vector2, bool> visited = new();
+            Dictionary<Vector2, bool> visited = new(); //helps us keep track of visited tiles
             Dictionary<Vector2, Vector2?> prev = new(); // prev helps us reconstruct path, tracks who the parent of a tile is
+
             //set all visited tiles to false except for the start (player's location) tile
             //and set all prev tiles to null 
             foreach (var tile in adjlist.Keys)
@@ -144,14 +142,17 @@ namespace Item_Locator
                 }
                 prev[tile] = null;
             }
+            //set the prev node of the target to null becauase we have not found the path yet
             prev[target] = null;
             while(queue.Count > 0)
             {
                 Vector2 node = queue.Dequeue();
+                //adjlist is a dictionary Key : Value ==> Tile : NeighboringTiles
                 List<Vector2> neighbors = adjlist[node];
+                //loop through the tile's neighbors
                 foreach (var neighbor in neighbors)
                 {
-                    //Console.WriteLine("NEIGHBOR!! " + neighbor);
+                    //if that neighbor has not been visited, add it to the queue, set it to visited, and set the prev node of it to the the parenting tile.
                     if (visited[neighbor] == false)
                     {
                         queue.Enqueue(neighbor);
@@ -160,30 +161,29 @@ namespace Item_Locator
                     }
                 }
             }
-            //Console.WriteLine("Successfully return prev in solve()");
             return prev;
         }
 
         private static List<Vector2> reconstructPath(Vector2 start, Vector2 end, Dictionary<Vector2, Vector2?> prev)
         {
             List<Vector2> path = new();
+            //go through the previous tiles from prev list until we hit null and add it the the path list
             for(Vector2? e = end; e != null; e = prev[e.Value] ?? null)
             {
                 if (e == null)
                 {
                     break;
                 }
-                Console.WriteLine($"E: {e}");
                 path.Add(e.Value);
             }
+            //reverse the path list so it goes from start -> end instead of end -> start
             path.Reverse();
 
+            //return the path if a valid path was found, if not then return an empty list.
             if (path[0] == start)
             {
-                //Console.WriteLine("Successfully returned path in reconstructPath()");
                 return path;
             }
-            //Console.WriteLine("returned empty path in reconstructPath()");
             return new List<Vector2>();
         }
     }

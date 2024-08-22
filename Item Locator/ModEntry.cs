@@ -46,6 +46,8 @@ namespace Item_Locator
         }
         private void DrawPath(RenderedWorldEventArgs e, List<List<Vector2>> path)
         {
+            //need to make changes to support multiple paths rather than just the path to the first target.
+            //perferrebly make the different paths different colors.
             foreach (var i in path[0])
             {
                 Vector2 screenpos = Game1.GlobalToLocal(Game1.viewport, i * Game1.tileSize);
@@ -61,6 +63,7 @@ namespace Item_Locator
             // ignore if player hasn't loaded a save yet
             if (!Context.IsWorldReady)
                 return;
+            //Keybind O opens the search menu
             if(e.Button is SButton.O && Game1.activeClickableMenu is null && Context.IsPlayerFree)
             {
                 Game1.activeClickableMenu = new CustomItemMenu();
@@ -68,44 +71,31 @@ namespace Item_Locator
                 this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
             }
 
-            // Keybinds U and J are meant for debugging.
-            // J prints out the available tiles the player can walk in.
-            // U prints out the chest locations
-            if (e.Button is SButton.U && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
-            {
-                validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
-                foreach(Vector2 loc in validChestLocs)
-                {
-                    Console.WriteLine($"{loc.X} {loc.Y}");
-                }
-
-                /*temp2 = Path_Finding.Find_Empty_Tiles(playerloc);
-                foreach(Vector2 loc2 in temp2)
-                {
-                    Console.WriteLine($"Empty: {loc2.X}, {loc2.Y}");
-                }*/
-            }
+            //Keybind J prints the tile location of mouse cursor for debugging REMOVE LATER
             if (e.Button is SButton.J && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
             {
                 Console.WriteLine($"Mouse cursor: {Game1.currentCursorTile}");
             }
 
+
+            //Keybind N is in charge of generating the path once the user and inputted a valid item id in the custom menu
+            //REMOVE THIS KEYBIND LATER, THE ONLY KEYBIND THAT WE SHOULD HAVE SHOULD BE TO OPEN THE MENU.
+            //implement this function (somehow) in the CustomItemMenu.cs using buttons or something idkf
             if(e.Button is SButton.N && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
             {
+                //get player tile location
                 Vector2 playerTileLoc = Game1.player.Tile;
                 
+                //finds all chest locations that contain the searched item
                 validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
+
                 if (validChestLocs.Count > 0)
                 {
-                    Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjMatrix(validChestLocs[0]);
-                    foreach (var i in validChestLocs)
-                    {
-                        Console.WriteLine("Chest Locs" + i);
-                    }
-                    Console.WriteLine("YOU PRESSED N");
+                    Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjList(validChestLocs[0]);
                     path = Path_Finding.FindPathBFS(validEmptyTiles, validChestLocs, playerTileLoc);
                 }else
                 {
+                    //if no paths are found, clear the list from previous paths so it doesnt draw it.
                     path.Clear();
                 }
             }
