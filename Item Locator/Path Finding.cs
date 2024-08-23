@@ -112,11 +112,13 @@ namespace Item_Locator
             //NEED TO MAKE CHANGES TO SUPPORT MULTIPLE TARGETS (CHESTS)
             //instead of target being the first value in targets, we need to
             //make a forloop that loops through each target and adds the path list to var paths.
-            var target = targets[0];
-
-            var previous = solve(start, target, adjlist); // put in for loop
-            paths.Add(reconstructPath(start, target, previous)); //put in for loop
-
+            //var target = targets[0];
+            foreach(var target in targets)
+            {
+                var previous = solve(start, target, adjlist);
+                paths.Add(reconstructPath(start, target, previous));
+                Console.WriteLine($"added path: {previous}");
+            }
             //NEED TO MAKE CHANGES IN ModEntry.cs DrawPath() to have a nested for loop to go through all list of path lists.
             return paths;
            

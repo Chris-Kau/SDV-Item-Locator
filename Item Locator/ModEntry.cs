@@ -38,20 +38,25 @@ namespace Item_Locator
         /// 
         private void RenderedWorld(object? sender, RenderedWorldEventArgs e)
         {
-            if(path.Count > 0)
+            if(path.Count > 0 && shouldDraw == true)
             {
                 DrawPath(e, path);
             }
 
         }
-        private void DrawPath(RenderedWorldEventArgs e, List<List<Vector2>> path)
+        private void DrawPath(RenderedWorldEventArgs e, List<List<Vector2>> paths)
         {
             //need to make changes to support multiple paths rather than just the path to the first target.
             //perferrebly make the different paths different colors.
-            foreach (var i in path[0])
+            //Console.WriteLine($"PathCount in DrawPath: {paths.Count}");
+            foreach (var path in paths)
             {
-                Vector2 screenpos = Game1.GlobalToLocal(Game1.viewport, i * Game1.tileSize);
-                e.SpriteBatch.Draw(tileHighlight, screenpos, Color.White);
+                foreach(var tile in path)
+                {
+                    Vector2 screenpos = Game1.GlobalToLocal(Game1.viewport, tile * Game1.tileSize);
+                    e.SpriteBatch.Draw(tileHighlight, screenpos, Color.White);
+                }
+
             }
         }
         private void OpenItemMenu(object? sender, ButtonPressedEventArgs e)
@@ -88,15 +93,27 @@ namespace Item_Locator
                 
                 //finds all chest locations that contain the searched item
                 validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
+                foreach(var i in validChestLocs)
+                {
+                    Console.WriteLine($"ValidChestLocs: {i}");
+                }
+                Console.WriteLine($"validChestLocs Count: {validChestLocs.Count}");
 
                 if (validChestLocs.Count > 0)
                 {
                     Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjList(validChestLocs[0]);
                     path = Path_Finding.FindPathBFS(validEmptyTiles, validChestLocs, playerTileLoc);
+                    Console.WriteLine($"Path Count: {path.Count}");
+                    foreach(var p in path)
+                    {
+                        Console.WriteLine($"var p: {p}");
+                    }
+                    shouldDraw = true;
                 }else
                 {
                     //if no paths are found, clear the list from previous paths so it doesnt draw it.
                     path.Clear();
+                    shouldDraw = false;
                 }
             }
         }
