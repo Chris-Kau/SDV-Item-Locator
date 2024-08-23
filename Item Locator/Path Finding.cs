@@ -1,16 +1,13 @@
-﻿using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using System.Collections.Generic;
-using StardewValley;
-using System.Collections.Generic;
+﻿using StardewValley;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System.Collections;
 
 namespace Item_Locator
 {
     public class Path_Finding
     {
+        /// <summary>
+        /// Generates a list of all empty/walkable tiles based off player's location
+        /// </summary>
         public static List<Vector2> Find_Empty_Tiles(GameLocation location)
         {
             List<Vector2> Empty_Tiles = new();
@@ -28,43 +25,11 @@ namespace Item_Locator
             return Empty_Tiles;
         }
 
-
-
-        public class Point
-        {
-            public int X; public int Y;
-            public Point(int x, int y)
-            {
-                X = x;
-                Y = y;
-            }
-            public override bool Equals(object obj)
-            {
-                if (obj is Point point)
-                {
-                    return X == point.X && Y == point.Y; ;
-                }
-                return false;
-            }
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(X,Y);
-            }
-        }
-
-        // public static double ComputeEuclideanDist(Point a, Point b)
+        /// <summary>
+        /// Generates an Adjacency List based off walkable tiles, tiles that have a chests containing the searched item ARE marked as an "empty" tile
+        /// </summary>
         public static Dictionary<Vector2, List<Vector2>> genAdjList(List<Vector2> targets)
         {
-            /*int n = points.Count;
-            int[,] graph = new int[n, n];*/ // automatically filled with 0s
-                                            // note that this is diff from x by y table, it's a point by point table
-
-            // assign a point to each index of graph somehow. dictionary or list probably so we know which is which
-            // making the graph a point graph instead of an int graph doesnt work. those table nums are supposed to be ints, the indexes are still ints
-
-
-            // no corners right. yeah.
-            
             //key : value
             //[5,5] : [[5,4], [5,6], [4,5], [6,5]]
 
@@ -77,7 +42,7 @@ namespace Item_Locator
                 empty_tiles.Add(target); //add the chest to the list of empty tiles to allow pathfind to it.
             }
             
-            foreach (Vector2 p in empty_tiles)
+            foreach (Vector2 p in empty_tiles) //Entire for loop is to get the neighboring walkable/empty tiles to add it to adj list
             {
                 List<Vector2> temp = [];
                 foreach (Vector2 o in empty_tiles)
@@ -109,6 +74,10 @@ namespace Item_Locator
 
             return adj_list;  
         }
+        /// <summary>
+        /// CALL THIS FUNCTION WHENEVER YOU NEED TO GENERATE THE PATHS AGAIN
+        /// Uses the returned value of FindPathBFS to set values in ModEntry to draw the path
+        /// </summary>
         public static void GetPaths()
         {
             //get player tile location
@@ -123,14 +92,14 @@ namespace Item_Locator
 
             if (validChestLocs.Count > 0)
             {
-                Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjList(validChestLocs);
-                ModEntry.paths = Path_Finding.FindPathBFS(validEmptyTiles, validChestLocs, playerTileLoc);
+                Dictionary<Vector2, List<Vector2>> validEmptyTiles = genAdjList(validChestLocs);
+                ModEntry.paths = FindPathBFS(validEmptyTiles, validChestLocs, playerTileLoc);
                 //assign random color to each path
                 foreach (var path in ModEntry.paths)
                 {
                     ModEntry.pathColors[path] = new Color(random.Next(125, 256), random.Next(125, 256), random.Next(125, 256));
                 }
-                ModEntry.shouldDraw = true;
+                ModEntry.shouldDraw = true; 
             }
             else
             {
@@ -140,25 +109,27 @@ namespace Item_Locator
                 ModEntry.shouldDraw = false;
             }
         }
+        /// <summary> 
+        /// This is the "main" function that returns all the available paths ]
+        /// </summary>
         private static List<List<Vector2>> FindPathBFS(Dictionary<Vector2, List<Vector2>> adjlist, List<Vector2> targets, Vector2 playerLocation)
         {
-            var start = playerLocation;
-            var paths = new List<List<Vector2>>();
-            //NEED TO MAKE CHANGES TO SUPPORT MULTIPLE TARGETS (CHESTS)
-            //instead of target being the first value in targets, we need to
-            //make a forloop that loops through each target and adds the path list to var paths.
-            //var target = targets[0];
+            var start = playerLocation; //starting tile
+            var paths = new List<List<Vector2>>(); //store all paths to all valid chests in here
             foreach(var target in targets)
             {
-                var previous = solve(start, target, adjlist);
-                var reconstructedPath = reconstructPath(start, target, previous);
+                var path = solve(start, target, adjlist);
+                var reconstructedPath = reconstructPath(start, target, path);
                 paths.Add(reconstructedPath);
             }
-            //NEED TO MAKE CHANGES IN ModEntry.cs DrawPath() to have a nested for loop to go through all list of path lists.
             return paths;
            
         }
 
+
+        /// <summary>
+        ///  Finds path using Breadth First Search and returns the path 
+        /// </summary>
         private static Dictionary<Vector2, Vector2?> solve(Vector2 start, Vector2 target, Dictionary<Vector2, List<Vector2>> adjlist)
         {
 
@@ -189,7 +160,7 @@ namespace Item_Locator
                 //loop through the tile's neighbors
                 foreach (var neighbor in neighbors)
                 {
-                    //if that neighbor has not been visited, add it to the queue, set it to visited, and set the prev node of it to the the parenting tile.
+                    //if that neighbor has not been visited, add it to the queue, set it to visited, and set the prev node of it to the parenting tile.
                     if (visited[neighbor] == false)
                     {
                         queue.Enqueue(neighbor);
@@ -200,7 +171,9 @@ namespace Item_Locator
             }
             return prev;
         }
-
+        /// <summary>
+        /// returns the path list and finds the starting tile from the end tile
+        /// </summary>
         private static List<Vector2> reconstructPath(Vector2 start, Vector2 end, Dictionary<Vector2, Vector2?> prev)
         {
             List<Vector2> path = new();

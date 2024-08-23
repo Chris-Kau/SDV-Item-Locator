@@ -1,12 +1,13 @@
-﻿using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using StardewValley;
+﻿using StardewValley;
 using Microsoft.Xna.Framework;
 
 namespace Item_Locator
 {
     public class FindChests
     {
+        /// <summary>
+        /// Returns a list of tiles that have a Chest containing the specified item
+        /// </summary>
         public static List<Vector2> get_chest_locs(GameLocation location, Item i)
         {
             List<Vector2> chest_locs = new();

@@ -14,8 +14,6 @@ namespace Item_Locator
         *********/
         
         Texture2D? tileHighlight;
-        Texture2D? locateButtonTexture;
-        Random random = new Random();
         //public static to allow access in CustomItemMenu.cs
         public static bool shouldDraw = false; 
         public static Dictionary<List<Vector2>, Color> pathColors = new();
@@ -26,7 +24,6 @@ namespace Item_Locator
         {
             //Opens up the custom menu
             tileHighlight = helper.ModContent.Load<Texture2D>("/assets/tileColor.png");
-            locateButtonTexture = helper.ModContent.Load<Texture2D>("/assets/LocateButtonTexture");
    
             helper.Events.Input.ButtonPressed += this.OpenItemMenu;
             //resizes menu on window resize
@@ -38,10 +35,9 @@ namespace Item_Locator
         /*********
         ** Private methods
         *********/
-        /// <summary>Raised after the player presses a button on the keyboard, controller, or mouse.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event data.</param>
-        /// 
+        /// <summary>
+        /// Constantly checks to see if there are paths available to draw and will call the DrawPath function
+        /// </summary>
         private void RenderedWorld(object? sender, RenderedWorldEventArgs e)
         {
             if(paths.Count > 0 && shouldDraw == true)
@@ -50,6 +46,9 @@ namespace Item_Locator
             }
 
         }
+        /// <summary>
+        /// Draws the paths to the player's screen
+        /// </summary>
         private void DrawPath(RenderedWorldEventArgs e, List<List<Vector2>> paths)
         {
             //Draws each path into the user's game
@@ -63,11 +62,12 @@ namespace Item_Locator
 
             }
         }
+
+        /// <summary>
+        /// Opens the item search menu upon clicking O
+        /// </summary>
         private void OpenItemMenu(object? sender, ButtonPressedEventArgs e)
         {
-            GameLocation playerloc = Game1.player.currentLocation;
-            List<Vector2> validChestLocs;
-
 
             // ignore if player hasn't loaded a save yet
             if (!Context.IsWorldReady)
@@ -75,24 +75,20 @@ namespace Item_Locator
             //Keybind O opens the search menu
             if(e.Button is SButton.O && Game1.activeClickableMenu is null && Context.IsPlayerFree)
             {
-                Game1.activeClickableMenu = new CustomItemMenu(locateButtonTexture);
-                // print button presses to the console window
-                this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
-            }
-
-            //Keybind J prints the tile location of mouse cursor for debugging REMOVE LATER
-            if (e.Button is SButton.J && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
-            {
-                Console.WriteLine($"Mouse cursor: {Game1.currentCursorTile}");
+                Game1.activeClickableMenu = new CustomItemMenu();
             }
 
         }
 
+        /// <summary>
+        /// resizes the item search menu upon changing window size
+        /// </summary>
+
         private void resizeCustomMenu(object? sender, WindowResizedEventArgs e)
         {
-            if(Game1.activeClickableMenu is CustomItemMenu)
+            if (Game1.activeClickableMenu is CustomItemMenu)
             {
-                Game1.activeClickableMenu = new CustomItemMenu(locateButtonTexture);
+                Game1.activeClickableMenu = new CustomItemMenu();
             }
         }
     }
