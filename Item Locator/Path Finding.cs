@@ -53,7 +53,7 @@ namespace Item_Locator
         }
 
         // public static double ComputeEuclideanDist(Point a, Point b)
-        public static Dictionary<Vector2, List<Vector2>> genAdjList(Vector2 target)
+        public static Dictionary<Vector2, List<Vector2>> genAdjList(List<Vector2> targets)
         {
             /*int n = points.Count;
             int[,] graph = new int[n, n];*/ // automatically filled with 0s
@@ -72,7 +72,11 @@ namespace Item_Locator
             GameLocation player_loc = Game1.player.currentLocation;
             Dictionary<Vector2, List<Vector2>> adj_list = new Dictionary<Vector2, List<Vector2>>();
             List<Vector2> empty_tiles = Find_Empty_Tiles(player_loc);
-            empty_tiles.Add(target); //add the chest to the list of empty tiles to allow pathfind to it.
+            foreach(var target in targets)
+            {
+                empty_tiles.Add(target); //add the chest to the list of empty tiles to allow pathfind to it.
+            }
+            
             foreach (Vector2 p in empty_tiles)
             {
                 List<Vector2> temp = [];
@@ -116,7 +120,9 @@ namespace Item_Locator
             foreach(var target in targets)
             {
                 var previous = solve(start, target, adjlist);
-                paths.Add(reconstructPath(start, target, previous));
+                var reconstructedPath = reconstructPath(start, target, previous);
+                Console.WriteLine($"Reconstructed path for target {target}: {string.Join(", ", reconstructedPath)}");
+                paths.Add(reconstructedPath);
                 Console.WriteLine($"added path: {previous}");
             }
             //NEED TO MAKE CHANGES IN ModEntry.cs DrawPath() to have a nested for loop to go through all list of path lists.

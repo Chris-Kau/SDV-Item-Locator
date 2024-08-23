@@ -12,9 +12,11 @@ namespace Item_Locator
         /*********
         ** Public methods
         *********/
-        List<List<Vector2>> path = new();
+        List<List<Vector2>> paths = new();
         Texture2D? tileHighlight;
         bool shouldDraw = false;
+        Random random = new Random();
+        Dictionary<List<Vector2>, Color> pathColors = new();
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
@@ -38,9 +40,9 @@ namespace Item_Locator
         /// 
         private void RenderedWorld(object? sender, RenderedWorldEventArgs e)
         {
-            if(path.Count > 0 && shouldDraw == true)
+            if(paths.Count > 0 && shouldDraw == true)
             {
-                DrawPath(e, path);
+                DrawPath(e, paths);
             }
 
         }
@@ -51,10 +53,11 @@ namespace Item_Locator
             //Console.WriteLine($"PathCount in DrawPath: {paths.Count}");
             foreach (var path in paths)
             {
-                foreach(var tile in path)
+                foreach (var tile in path)
                 {
+                    
                     Vector2 screenpos = Game1.GlobalToLocal(Game1.viewport, tile * Game1.tileSize);
-                    e.SpriteBatch.Draw(tileHighlight, screenpos, Color.White);
+                    e.SpriteBatch.Draw(tileHighlight, screenpos, pathColors[path]);
                 }
 
             }
@@ -93,26 +96,22 @@ namespace Item_Locator
                 
                 //finds all chest locations that contain the searched item
                 validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
-                foreach(var i in validChestLocs)
-                {
-                    Console.WriteLine($"ValidChestLocs: {i}");
-                }
-                Console.WriteLine($"validChestLocs Count: {validChestLocs.Count}");
 
                 if (validChestLocs.Count > 0)
                 {
-                    Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjList(validChestLocs[0]);
-                    path = Path_Finding.FindPathBFS(validEmptyTiles, validChestLocs, playerTileLoc);
-                    Console.WriteLine($"Path Count: {path.Count}");
-                    foreach(var p in path)
+                    Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjList(validChestLocs);
+                    paths = Path_Finding.FindPathBFS(validEmptyTiles, validChestLocs, playerTileLoc);
+                    //assign random color to each path
+                    foreach(var path in paths)
                     {
-                        Console.WriteLine($"var p: {p}");
+                        pathColors[path] = new Color(random.Next(100,256), random.Next(100,256), random.Next(100,256));
                     }
                     shouldDraw = true;
                 }else
                 {
                     //if no paths are found, clear the list from previous paths so it doesnt draw it.
-                    path.Clear();
+                    paths.Clear();
+                    pathColors.Clear();
                     shouldDraw = false;
                 }
             }
