@@ -44,6 +44,33 @@ namespace Item_Locator
             SearchedItem = new StardewValley.Object(sender.Text, 1);
         }
 
+        private void scaleTransition(ClickableTextureComponent icon, float scaleResult, float delta)
+        {
+            //if delta > 0, that means we want to scale up, otherwise scale down
+            if (delta > 0)
+            {
+                if (icon.scale < scaleResult)
+                {
+                    icon.scale += delta;
+                }
+                else
+                {
+                    icon.scale = scaleResult;
+                }
+            }
+            else
+            {
+                if (icon.scale > scaleResult)
+                {
+                    icon.scale += delta;
+                }
+                else
+                {
+                    icon.scale = scaleResult;
+                }
+            }
+        }
+
         /// <summary>
         /// Detects if a player clicked in the area of a clickable component
         /// </summary>
@@ -71,6 +98,9 @@ namespace Item_Locator
                 
             }
         }
+        /// <summary>
+        /// allows visual hover changes such as animation or text
+        /// </summary>
         public override void performHoverAction(int x, int y)
         {
             base.performHoverAction(x, y);
@@ -78,10 +108,12 @@ namespace Item_Locator
             if(LocateButtonRect.Contains(x,y))
             {
                 locateButton.hoverText = "Locate Item";
+                scaleTransition(locateButton, 6.3f, 0.08f);
             }
             else
             {
                 locateButton.hoverText = "";
+                scaleTransition(locateButton, 6f, -0.08f);
             }
 
         }
