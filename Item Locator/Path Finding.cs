@@ -121,9 +121,7 @@ namespace Item_Locator
             {
                 var previous = solve(start, target, adjlist);
                 var reconstructedPath = reconstructPath(start, target, previous);
-                Console.WriteLine($"Reconstructed path for target {target}: {string.Join(", ", reconstructedPath)}");
                 paths.Add(reconstructedPath);
-                Console.WriteLine($"added path: {previous}");
             }
             //NEED TO MAKE CHANGES IN ModEntry.cs DrawPath() to have a nested for loop to go through all list of path lists.
             return paths;

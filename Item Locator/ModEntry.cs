@@ -12,17 +12,21 @@ namespace Item_Locator
         /*********
         ** Public methods
         *********/
-        List<List<Vector2>> paths = new();
+        
         Texture2D? tileHighlight;
-        bool shouldDraw = false;
+        Texture2D? locateButtonTexture;
         Random random = new Random();
-        Dictionary<List<Vector2>, Color> pathColors = new();
+        //public static to allow access in CustomItemMenu.cs
+        public static bool shouldDraw = false; 
+        public static Dictionary<List<Vector2>, Color> pathColors = new();
+        public static List<List<Vector2>> paths = new();
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
             //Opens up the custom menu
             tileHighlight = helper.ModContent.Load<Texture2D>("/assets/tileColor.png");
+            locateButtonTexture = helper.ModContent.Load<Texture2D>("/assets/LocateButtonTexture");
    
             helper.Events.Input.ButtonPressed += this.OpenItemMenu;
             //resizes menu on window resize
@@ -48,16 +52,13 @@ namespace Item_Locator
         }
         private void DrawPath(RenderedWorldEventArgs e, List<List<Vector2>> paths)
         {
-            //need to make changes to support multiple paths rather than just the path to the first target.
-            //perferrebly make the different paths different colors.
-            //Console.WriteLine($"PathCount in DrawPath: {paths.Count}");
+            //Draws each path into the user's game
             foreach (var path in paths)
             {
                 foreach (var tile in path)
                 {
-                    
                     Vector2 screenpos = Game1.GlobalToLocal(Game1.viewport, tile * Game1.tileSize);
-                    e.SpriteBatch.Draw(tileHighlight, screenpos, pathColors[path]);
+                    e.SpriteBatch.Draw(tileHighlight, screenpos, pathColors[path]); //pathColors is a dict used to keep track of its distinct color
                 }
 
             }
@@ -74,7 +75,7 @@ namespace Item_Locator
             //Keybind O opens the search menu
             if(e.Button is SButton.O && Game1.activeClickableMenu is null && Context.IsPlayerFree)
             {
-                Game1.activeClickableMenu = new CustomItemMenu();
+                Game1.activeClickableMenu = new CustomItemMenu(locateButtonTexture);
                 // print button presses to the console window
                 this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
             }
@@ -104,7 +105,7 @@ namespace Item_Locator
                     //assign random color to each path
                     foreach(var path in paths)
                     {
-                        pathColors[path] = new Color(random.Next(100,256), random.Next(100,256), random.Next(100,256));
+                        pathColors[path] = new Color(random.Next(125,256), random.Next(125,256), random.Next(125,256));
                     }
                     shouldDraw = true;
                 }else
@@ -121,7 +122,7 @@ namespace Item_Locator
         {
             if(Game1.activeClickableMenu is CustomItemMenu)
             {
-                Game1.activeClickableMenu = new CustomItemMenu();
+                Game1.activeClickableMenu = new CustomItemMenu(locateButtonTexture);
             }
         }
     }
