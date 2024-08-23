@@ -44,6 +44,9 @@ namespace Item_Locator
             SearchedItem = new StardewValley.Object(sender.Text, 1);
         }
 
+        /// <summary>
+        /// used for any sort of smooth animation of a component becoming bigger/smaller
+        /// </summary>
         private void scaleTransition(ClickableTextureComponent icon, float scaleResult, float delta)
         {
             //if delta > 0, that means we want to scale up, otherwise scale down
@@ -108,12 +111,12 @@ namespace Item_Locator
             if(LocateButtonRect.Contains(x,y))
             {
                 locateButton.hoverText = "Locate Item";
-                scaleTransition(locateButton, 6.3f, 0.08f);
+                scaleTransition(locateButton, 6.3f, 0.08f); 
             }
             else
             {
                 locateButton.hoverText = "";
-                scaleTransition(locateButton, 6f, -0.08f);
+                scaleTransition(locateButton, 6f, -0.08f); //6f is the original scale of the locateButton
             }
 
         }
