@@ -5,6 +5,7 @@ using StardewValley.Menus;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Utilities;
+using System;
 namespace Item_Locator
 {
     public class CustomItemMenu : IClickableMenu
@@ -65,6 +66,8 @@ namespace Item_Locator
                 if(SearchedItem is not null && Game1.activeClickableMenu is CustomItemMenu)
                 {
                     Console.WriteLine("YOU PRESSED LOCATE");
+                    Path_Finding.GetPaths();
+                    Game1.activeClickableMenu = null;
                 }
                 
             }

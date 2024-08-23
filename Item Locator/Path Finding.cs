@@ -109,7 +109,38 @@ namespace Item_Locator
 
             return adj_list;  
         }
-        public static List<List<Vector2>> FindPathBFS(Dictionary<Vector2, List<Vector2>> adjlist, List<Vector2> targets, Vector2 playerLocation)
+        public static void GetPaths()
+        {
+            //get player tile location
+            Random random = new Random();
+            GameLocation playerloc = Game1.player.currentLocation;
+            List<Vector2> validChestLocs;
+
+            Vector2 playerTileLoc = Game1.player.Tile;
+
+            //finds all chest locations that contain the searched item
+            validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
+
+            if (validChestLocs.Count > 0)
+            {
+                Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjList(validChestLocs);
+                ModEntry.paths = Path_Finding.FindPathBFS(validEmptyTiles, validChestLocs, playerTileLoc);
+                //assign random color to each path
+                foreach (var path in ModEntry.paths)
+                {
+                    ModEntry.pathColors[path] = new Color(random.Next(125, 256), random.Next(125, 256), random.Next(125, 256));
+                }
+                ModEntry.shouldDraw = true;
+            }
+            else
+            {
+                //if no paths are found, clear the list from previous paths so it doesnt draw it.
+                ModEntry.paths.Clear();
+                ModEntry.pathColors.Clear();
+                ModEntry.shouldDraw = false;
+            }
+        }
+        private static List<List<Vector2>> FindPathBFS(Dictionary<Vector2, List<Vector2>> adjlist, List<Vector2> targets, Vector2 playerLocation)
         {
             var start = playerLocation;
             var paths = new List<List<Vector2>>();

@@ -86,36 +86,6 @@ namespace Item_Locator
                 Console.WriteLine($"Mouse cursor: {Game1.currentCursorTile}");
             }
 
-
-            //Keybind N is in charge of generating the path once the user and inputted a valid item id in the custom menu
-            //REMOVE THIS KEYBIND LATER, THE ONLY KEYBIND THAT WE SHOULD HAVE SHOULD BE TO OPEN THE MENU.
-            //implement this function (somehow) in the CustomItemMenu.cs using buttons or something idkf
-            if(e.Button is SButton.N && Game1.activeClickableMenu is null && Context.IsPlayerFree && CustomItemMenu.SearchedItem is not null)
-            {
-                //get player tile location
-                Vector2 playerTileLoc = Game1.player.Tile;
-                
-                //finds all chest locations that contain the searched item
-                validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
-
-                if (validChestLocs.Count > 0)
-                {
-                    Dictionary<Vector2, List<Vector2>> validEmptyTiles = Path_Finding.genAdjList(validChestLocs);
-                    paths = Path_Finding.FindPathBFS(validEmptyTiles, validChestLocs, playerTileLoc);
-                    //assign random color to each path
-                    foreach(var path in paths)
-                    {
-                        pathColors[path] = new Color(random.Next(125,256), random.Next(125,256), random.Next(125,256));
-                    }
-                    shouldDraw = true;
-                }else
-                {
-                    //if no paths are found, clear the list from previous paths so it doesnt draw it.
-                    paths.Clear();
-                    pathColors.Clear();
-                    shouldDraw = false;
-                }
-            }
         }
 
         private void resizeCustomMenu(object? sender, WindowResizedEventArgs e)
