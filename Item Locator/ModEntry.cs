@@ -9,13 +9,6 @@ namespace Item_Locator
     /// <summary>The mod entry point.</summary>
     internal sealed class ModEntry : Mod
     {
-        /// <remarks>
-        /// KNOWN ISSUES:
-        ///     - Game crashes when pressing "locate" while standing inside of a bed
-        ///     - Menu does not resize correctly when starting off small window -> opening menu -> close menu -> go fullscreen -> open menu again
-        /// </remarks>
-
-
         Texture2D? tileHighlight;
         //public static to allow access in CustomItemMenu.cs
         public static bool shouldDraw = false; 

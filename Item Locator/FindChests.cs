@@ -19,15 +19,29 @@ namespace Item_Locator
                     //checks to see if the there is an object at x,y and checks to see if there is a chest object on said tile.
                     if(location.objects.ContainsKey(new Vector2(x, y)) && location.Objects[new Vector2(x,y)] is StardewValley.Objects.Chest chest)
                     {
-                        //if we found a match in item names, add it to the chest_locs list
-                        foreach(Item a in chest.Items)
+                       //if we found a match in item names, add it to the chest_locs list
+                       if(chest.name == "Junimo Chest")
                         {
-                            if (i.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
+                            foreach (var a in Game1.player.team.GetOrCreateGlobalInventory("JunimoChests"))
                             {
-                                chest_locs.Add(new Vector2(x, y));
-                                break;
+                                if (i.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    chest_locs.Add(new Vector2(x, y));
+                                    break;
+                                }
+                            }
+                        }else
+                        {
+                            foreach (Item a in chest.Items)
+                            {
+                                if (i.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    chest_locs.Add(new Vector2(x, y));
+                                    break;
+                                }
                             }
                         }
+
                     }
                 }
             }

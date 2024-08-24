@@ -33,8 +33,8 @@ namespace Item_Locator
             yPos = (int)((Game1.viewport.Height * Game1.options.zoomLevel / Game1.options.uiScale / 2) - UIHeight);
             xPos = Math.Max(0, Math.Min(xPos, Game1.viewport.Width - UIWidth));
             yPos = Math.Max(0, Math.Min(yPos, Game1.viewport.Height - UIHeight));
-            Vector2 spaceSize = Game1.smallFont.MeasureString("    "); //used to artifically justify-center for text in TitleLabel
-            TitleLabel = new ClickableComponent(new Rectangle(xPos + (UIWidth / 2) - ((UIWidth - 400) / 2) - (int)spaceSize.X, yPos + 96, UIWidth - 400, 64), "    ItemLocator\nEnter Item Name:");
+            Vector2 spaceSize = Game1.smallFont.MeasureString("   "); //used to artifically justify-center for text in TitleLabel
+            TitleLabel = new ClickableComponent(new Rectangle(xPos + (UIWidth / 2) - ((UIWidth - 400) / 2) - (int)spaceSize.X, yPos + 96, UIWidth - 400, 64), "   Item Locator\nEnter Item Name:");
             getItem = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), Game1.smallFont, Game1.textColor)
             {
                 X = xPos + (UIWidth / 2) - (TitleLabel.bounds.Width / 2) - 35,
@@ -105,6 +105,7 @@ namespace Item_Locator
                 {
                     getItem.Selected = false;
                     getItem.Text = "";
+                    SearchedItem = "";
                     return;
                 }
                 if(key == Keys.E) //Keybind E closes the window when typing in textbox, so we check here so it doesnt close while typing
@@ -117,7 +118,6 @@ namespace Item_Locator
             {
                 base.receiveKeyPress(key);
             }
-            
         }
         /// <summary>
         /// Detects if a player clicked in the area of a clickable component
