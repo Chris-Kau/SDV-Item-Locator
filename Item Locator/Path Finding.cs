@@ -123,7 +123,8 @@ namespace Item_Locator
             {
                 var path = solve(start, target, adjlist);
                 var reconstructedPath = reconstructPath(start, target, path);
-                paths.Add(reconstructedPath);
+                if (reconstructedPath.Count > 0)
+                    paths.Add(reconstructedPath);
             }
             return paths;
            
@@ -191,7 +192,6 @@ namespace Item_Locator
             }
             //reverse the path list so it goes from start -> end instead of end -> start
             path.Reverse();
-
             //return the path if a valid path was found, if not then return an empty list.
             if (path[0] == start)
             {

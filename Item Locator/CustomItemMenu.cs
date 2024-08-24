@@ -36,7 +36,9 @@ namespace Item_Locator
                 Y = TitleLabel.bounds.Y + TitleLabel.bounds.Height + 30,
                 Width = TitleLabel.bounds.Width,
             };
-            
+
+            getItem.Text = SearchedItem;
+
             locateButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) + (14 * 6), getItem.Y + 40 + (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15),6f);
             locateButtonRect = new Rectangle(locateButton.bounds.X, locateButton.bounds.Y, locateButton.bounds.Width * (int)locateButton.scale, locateButton.bounds.Height * (int)locateButton.scale);
             
@@ -133,12 +135,12 @@ namespace Item_Locator
 
                     Path_Finding.GetPaths(); //helps find and draw paths
                     List<Vector2> chestlocs = FindChests.get_chest_locs(Game1.player.currentLocation, SearchedItem);
-                    if((Path_Finding.pathCount == 0 || ModEntry.getPathsCount() == 0) && chestlocs.Count == 0)
+                    if(ModEntry.getPathsCount() == 0 && chestlocs.Count == 0)
                     {
                         //add text if there were not paths found
                         noChestsFound = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 50, 30,30), "No paths or containers found :(");
                     }
-                    else if((Path_Finding.pathCount == 0  || ModEntry.getPathsCount() == 0) && chestlocs.Count > 0)
+                    else if(ModEntry.getPathsCount() == 0 && chestlocs.Count > 0)
                     {
                         noChestsFound = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 50, 30, 30), $"No paths found, {chestlocs.Count} containers found");
 
