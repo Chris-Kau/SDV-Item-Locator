@@ -2,13 +2,15 @@
 using StardewValley.Menus;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 namespace Item_Locator
 {
     public class CustomItemMenu : IClickableMenu
     {
-        public static Item? SearchedItem;
+        public static string SearchedItem = "";
         //public static Texture2D? locateButtonTexture;
-        public static ClickableTextureComponent? locateButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) - (14 * 6 / 2), yPos + 96 * 5 - (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15),6f);
+        public static ClickableTextureComponent locateButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) + (14 * 6), yPos + 96 * 5 - (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15),6f);
+        public static ClickableTextureComponent clearButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) - (14 * 8), yPos + 96 * 5 - (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(269, 471, 14, 15), 6f);
         static int UIWidth = 632;
         static int UIHeight = 600;
         //Takes user's zoomlevel and uiscale into account to center menu based off user's settings too
@@ -19,20 +21,25 @@ namespace Item_Locator
         TextBox getItemID;
         Rectangle getItemIDRect;
         Rectangle LocateButtonRect;
+        Rectangle ClearButtonRect;
 
         public CustomItemMenu()
         {
             xPos = Math.Max(0, Math.Min(xPos, Game1.viewport.Width - UIWidth));
             yPos = Math.Max(0, Math.Min(yPos, Game1.viewport.Height - UIHeight));
             TitleLabel = new ClickableComponent(new Rectangle(xPos + 200, yPos + 96, UIWidth - 400, 64), "Item Locator");
-            MenuDesc = new ClickableComponent(new Rectangle(xPos + 200, yPos + 150, UIWidth - 400, 64), "Enter Item ID");
+            MenuDesc = new ClickableComponent(new Rectangle(xPos + 200, yPos + 150, UIWidth - 400, 64), "Enter Item Name:");
             getItemID = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), Game1.smallFont, Game1.textColor)
             {
                 X = MenuDesc.bounds.X,
                 Y = MenuDesc.bounds.Y + MenuDesc.bounds.Height + 50,
                 Width = MenuDesc.bounds.Width,
             };
-            locateButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) - (14 * 6 / 2), yPos + 96 * 5 - (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15),6f);
+            //reset buttons to account for UI dimension and x/yPos
+            locateButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) + (14 * 6), yPos + 96 * 5 - (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15),6f);
+            LocateButtonRect = new Rectangle(locateButton.bounds.X, locateButton.bounds.Y, locateButton.bounds.Width * (int)locateButton.scale, locateButton.bounds.Height * (int)locateButton.scale);
+            clearButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) - (14 * 6 * 2), yPos + 96 * 5 - (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(269, 471, 14, 15), 6f);
+            ClearButtonRect = new Rectangle(clearButton.bounds.X, clearButton.bounds.Y, clearButton.bounds.Width * (int)clearButton.scale, clearButton.bounds.Height * (int)clearButton.scale);
             getItemID.OnEnterPressed += EnterPressed;
         }
 
@@ -41,7 +48,7 @@ namespace Item_Locator
         /// </summary>
         private void EnterPressed(TextBox sender)
         {
-            SearchedItem = new StardewValley.Object(sender.Text, 1);
+            SearchedItem = sender.Text.ToLower();
         }
 
         /// <summary>
@@ -74,6 +81,31 @@ namespace Item_Locator
             }
         }
 
+        ///<summary>
+        /// Ingores certain key presses to prevent menu closing while typing in textbox
+        /// </summary>
+        public override void receiveKeyPress(Keys key)
+        {
+
+            if(getItemID != null && getItemID.Selected)
+            {
+                if (key == Keys.Escape) //ESC is now used to deselect text box while typing, and will close window if textbox is not selected
+                {
+                    getItemID.Selected = false;
+                    return;
+                }
+                if(key == Keys.E) //Keybind E closes the window when typing in textbox, so we check here so it doesnt close while typing
+                {
+                    return;
+                }
+                base.receiveKeyPress(key);
+            }
+            else
+            {
+                base.receiveKeyPress(key);
+            }
+            
+        }
         /// <summary>
         /// Detects if a player clicked in the area of a clickable component
         /// </summary>
@@ -81,8 +113,6 @@ namespace Item_Locator
         {
             //Rectangles are used for click detection to see if the player clicked on the clickable components
             getItemIDRect = new Rectangle(getItemID.X, getItemID.Y, getItemID.Width, getItemID.Height);
-            LocateButtonRect = new Rectangle(locateButton.bounds.X, locateButton.bounds.Y, locateButton.bounds.Width * (int)locateButton.scale, locateButton.bounds.Height * (int)locateButton.scale);
-            
             if (getItemIDRect.Contains(x, y))
             {
                 getItemID.Selected = true; // user is able to type in text box
@@ -100,6 +130,12 @@ namespace Item_Locator
                 }
                 
             }
+            if(ClearButtonRect.Contains(x,y))
+            {
+                ModEntry.paths.Clear(); // clear all paths
+                ModEntry.shouldDraw = false; 
+                Game1.activeClickableMenu = null; //close menu
+            }
         }
         /// <summary>
         /// allows visual hover changes such as animation or text
@@ -107,7 +143,7 @@ namespace Item_Locator
         public override void performHoverAction(int x, int y)
         {
             base.performHoverAction(x, y);
-            LocateButtonRect = new Rectangle(locateButton.bounds.X, locateButton.bounds.Y, locateButton.bounds.Width * (int)locateButton.scale, locateButton.bounds.Height * (int)locateButton.scale);
+            
             if(LocateButtonRect.Contains(x,y))
             {
                 locateButton.hoverText = "Locate Item";
@@ -117,6 +153,17 @@ namespace Item_Locator
             {
                 locateButton.hoverText = "";
                 scaleTransition(locateButton, 6f, -0.08f); //6f is the original scale of the locateButton
+            }
+
+            if(ClearButtonRect.Contains(x,y))
+            {
+                clearButton.hoverText = "Clear All Paths";
+                scaleTransition(clearButton, 6.3f, 0.08f);
+            }
+            else
+            {
+                clearButton.hoverText = "";
+                scaleTransition(clearButton, 6f, -0.08f);
             }
 
         }
@@ -130,11 +177,16 @@ namespace Item_Locator
             Utility.drawTextWithShadow(b, TitleLabel.name, Game1.dialogueFont, new Vector2(TitleLabel.bounds.X, TitleLabel.bounds.Y), Color.Black);
             Utility.drawTextWithShadow(b, MenuDesc.name, Game1.dialogueFont, new Vector2(MenuDesc.bounds.X, MenuDesc.bounds.Y), Color.Black);
             locateButton.draw(b);
+            clearButton.draw(b);
 
             //draws hovertext
             if (!string.IsNullOrEmpty(locateButton.hoverText))
             {
-                IClickableMenu.drawHoverText(b, locateButton.hoverText, Game1.smallFont);
+                drawHoverText(b, locateButton.hoverText, Game1.smallFont);
+            }
+            if (!string.IsNullOrEmpty(clearButton.hoverText))
+            {
+                drawHoverText(b, clearButton.hoverText, Game1.smallFont);
             }
             getItemID.Draw(b);
             drawMouse(b);

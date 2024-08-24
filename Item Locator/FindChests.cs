@@ -8,7 +8,7 @@ namespace Item_Locator
         /// <summary>
         /// Returns a list of tiles that have a Chest containing the specified item
         /// </summary>
-        public static List<Vector2> get_chest_locs(GameLocation location, Item i)
+        public static List<Vector2> get_chest_locs(GameLocation location, string i)
         {
             List<Vector2> chest_locs = new();
             //first 2 for loops loop through all tiles on player's location map
@@ -22,7 +22,7 @@ namespace Item_Locator
                         //if we found a match in item names, add it to the chest_locs list
                         foreach(Item a in chest.Items)
                         {
-                            if (i.Name == a.Name)
+                            if (i.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
                             {
                                 chest_locs.Add(new Vector2(x, y));
                                 break;
