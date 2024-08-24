@@ -75,8 +75,8 @@ namespace Item_Locator
             return adj_list;  
         }
         /// <summary>
-        /// CALL THIS FUNCTION WHENEVER YOU NEED TO GENERATE THE PATHS AGAIN
-        /// Uses the returned value of FindPathBFS to set values in ModEntry to draw the path
+        /// CALL THIS FUNCTION WHENEVER YOU NEED TO GENERATE THE PATHS ONTO THE PLAYER'S SCREEN AGAIN
+        /// Uses the returned value of FindPathsBFS to set values in ModEntry to draw the path
         /// </summary>
         public static void GetPaths()
         {
@@ -93,7 +93,7 @@ namespace Item_Locator
             if (validChestLocs.Count > 0)
             {
                 Dictionary<Vector2, List<Vector2>> validEmptyTiles = genAdjList(validChestLocs);
-                ModEntry.paths = FindPathBFS(validEmptyTiles, validChestLocs, playerTileLoc);
+                ModEntry.paths = FindPathsBFS(validEmptyTiles, validChestLocs, playerTileLoc);
                 //assign random color to each path
                 foreach (var path in ModEntry.paths)
                 {
@@ -112,7 +112,7 @@ namespace Item_Locator
         /// <summary> 
         /// This is the "main" function that returns all the available paths ]
         /// </summary>
-        private static List<List<Vector2>> FindPathBFS(Dictionary<Vector2, List<Vector2>> adjlist, List<Vector2> targets, Vector2 playerLocation)
+        private static List<List<Vector2>> FindPathsBFS(Dictionary<Vector2, List<Vector2>> adjlist, List<Vector2> targets, Vector2 playerLocation)
         {
             var start = playerLocation; //starting tile
             var paths = new List<List<Vector2>>(); //store all paths to all valid chests in here

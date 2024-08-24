@@ -27,7 +27,6 @@ namespace Item_Locator
         {
             //Opens up the custom menu
             tileHighlight = helper.ModContent.Load<Texture2D>("/assets/tileColor.png");
-   
             helper.Events.Input.ButtonPressed += this.OpenItemMenu;
             //resizes menu on window resize
             helper.Events.Display.WindowResized += this.resizeCustomMenu;

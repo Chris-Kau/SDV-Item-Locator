@@ -9,38 +9,42 @@ namespace Item_Locator
     {
         public static string SearchedItem = "";
         //public static Texture2D? locateButtonTexture;
-        public static ClickableTextureComponent locateButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) + (14 * 6), yPos + 96 * 5 - (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15),6f);
-        public static ClickableTextureComponent clearButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) - (14 * 8), yPos + 96 * 5 - (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(269, 471, 14, 15), 6f);
+        public static ClickableTextureComponent? locateButton;
+        public static ClickableTextureComponent? clearButton;
+        public static ClickableTextureComponent? finishedButton;
         static int UIWidth = 632;
         static int UIHeight = 600;
         //Takes user's zoomlevel and uiscale into account to center menu based off user's settings too
         static int xPos = (int)((Game1.viewport.Width * Game1.options.zoomLevel / Game1.options.uiScale / 2) - (UIWidth / 2));
         static int yPos = (int)((Game1.viewport.Height * Game1.options.zoomLevel / Game1.options.uiScale / 2) - UIHeight);
         ClickableComponent TitleLabel;
-        ClickableComponent MenuDesc;
-        TextBox getItemID;
-        Rectangle getItemIDRect;
-        Rectangle LocateButtonRect;
-        Rectangle ClearButtonRect;
+        ClickableComponent? noChestsFound;
+        TextBox getItem;
+        Rectangle getItemRect;
+        Rectangle locateButtonRect;
+        Rectangle clearButtonRect;
 
         public CustomItemMenu()
         {
             xPos = Math.Max(0, Math.Min(xPos, Game1.viewport.Width - UIWidth));
             yPos = Math.Max(0, Math.Min(yPos, Game1.viewport.Height - UIHeight));
-            TitleLabel = new ClickableComponent(new Rectangle(xPos + 200, yPos + 96, UIWidth - 400, 64), "Item Locator");
-            MenuDesc = new ClickableComponent(new Rectangle(xPos + 200, yPos + 150, UIWidth - 400, 64), "Enter Item Name:");
-            getItemID = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), Game1.smallFont, Game1.textColor)
+            Vector2 spaceSize = Game1.smallFont.MeasureString("    "); //used to artifically justify-center for text in TitleLabel
+            TitleLabel = new ClickableComponent(new Rectangle(xPos + (UIWidth / 2) - ((UIWidth - 400) / 2) - (int)spaceSize.X, yPos + 96, UIWidth - 400, 64), "    ItemLocator\nEnter Item Name:");
+            getItem = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), Game1.smallFont, Game1.textColor)
             {
-                X = MenuDesc.bounds.X,
-                Y = MenuDesc.bounds.Y + MenuDesc.bounds.Height + 50,
-                Width = MenuDesc.bounds.Width,
+                X = xPos + (UIWidth / 2) - (TitleLabel.bounds.Width / 2) - 35,
+                Y = TitleLabel.bounds.Y + TitleLabel.bounds.Height + 30,
+                Width = TitleLabel.bounds.Width,
             };
-            //reset buttons to account for UI dimension and x/yPos
-            locateButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) + (14 * 6), yPos + 96 * 5 - (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15),6f);
-            LocateButtonRect = new Rectangle(locateButton.bounds.X, locateButton.bounds.Y, locateButton.bounds.Width * (int)locateButton.scale, locateButton.bounds.Height * (int)locateButton.scale);
-            clearButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) - (14 * 6 * 2), yPos + 96 * 5 - (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(269, 471, 14, 15), 6f);
-            ClearButtonRect = new Rectangle(clearButton.bounds.X, clearButton.bounds.Y, clearButton.bounds.Width * (int)clearButton.scale, clearButton.bounds.Height * (int)clearButton.scale);
-            getItemID.OnEnterPressed += EnterPressed;
+            
+            locateButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) + (14 * 6), getItem.Y + 40 + (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15),6f);
+            locateButtonRect = new Rectangle(locateButton.bounds.X, locateButton.bounds.Y, locateButton.bounds.Width * (int)locateButton.scale, locateButton.bounds.Height * (int)locateButton.scale);
+            
+            clearButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) - (14 * 6 * 2), getItem.Y + 40 + (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(269, 471, 14, 15), 6f);
+            clearButtonRect = new Rectangle(clearButton.bounds.X, clearButton.bounds.Y, clearButton.bounds.Width * (int)clearButton.scale, clearButton.bounds.Height * (int)clearButton.scale);
+
+            finishedButton = new ClickableTextureComponent(new Rectangle(getItem.X + 10 + getItem.Width, getItem.Y, 64, 64), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(128,256,64,64), 0.7f);
+            getItem.OnEnterPressed += EnterPressed;
         }
 
         /// <summary>
@@ -87,11 +91,11 @@ namespace Item_Locator
         public override void receiveKeyPress(Keys key)
         {
 
-            if(getItemID != null && getItemID.Selected)
+            if(getItem != null && getItem.Selected)
             {
                 if (key == Keys.Escape) //ESC is now used to deselect text box while typing, and will close window if textbox is not selected
                 {
-                    getItemID.Selected = false;
+                    getItem.Selected = false;
                     return;
                 }
                 if(key == Keys.E) //Keybind E closes the window when typing in textbox, so we check here so it doesnt close while typing
@@ -112,25 +116,35 @@ namespace Item_Locator
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
             //Rectangles are used for click detection to see if the player clicked on the clickable components
-            getItemIDRect = new Rectangle(getItemID.X, getItemID.Y, getItemID.Width, getItemID.Height);
-            if (getItemIDRect.Contains(x, y))
+            getItemRect = new Rectangle(getItem.X, getItem.Y, getItem.Width, getItem.Height);
+            if (getItemRect.Contains(x, y))
             {
-                getItemID.Selected = true; // user is able to type in text box
+                getItem.Selected = true; // user is able to type in text box
             }
             else
             {
-                getItemID.Selected = false; // user is unable to type in text box
+                SearchedItem = getItem.Text;
+                getItem.Selected = false; // user is unable to type in text box
             }
-            if(LocateButtonRect.Contains(x, y))
+            if(locateButtonRect.Contains(x, y))
             {
                 if(SearchedItem is not null && Game1.activeClickableMenu is CustomItemMenu)
                 {
                     Path_Finding.GetPaths(); //helps finds and draw paths
-                    Game1.activeClickableMenu = null; //close menu
+                    if(ModEntry.paths.Count == 0)
+                    {
+                        noChestsFound = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 50, 30,30), "No containers found :(");
+                    }
+                    else
+                    {
+                        Game1.activeClickableMenu = null; //close menu
+                        noChestsFound = null;
+                    }
+
                 }
                 
             }
-            if(ClearButtonRect.Contains(x,y))
+            if(clearButtonRect.Contains(x,y))
             {
                 ModEntry.paths.Clear(); // clear all paths
                 ModEntry.shouldDraw = false; 
@@ -143,8 +157,10 @@ namespace Item_Locator
         public override void performHoverAction(int x, int y)
         {
             base.performHoverAction(x, y);
-            
-            if(LocateButtonRect.Contains(x,y))
+            if (locateButton is null || clearButton is null)
+                return;
+
+            if(locateButtonRect.Contains(x,y))
             {
                 locateButton.hoverText = "Locate Item";
                 scaleTransition(locateButton, 6.3f, 0.08f); 
@@ -155,7 +171,7 @@ namespace Item_Locator
                 scaleTransition(locateButton, 6f, -0.08f); //6f is the original scale of the locateButton
             }
 
-            if(ClearButtonRect.Contains(x,y))
+            if(clearButtonRect.Contains(x,y))
             {
                 clearButton.hoverText = "Clear All Paths";
                 scaleTransition(clearButton, 6.3f, 0.08f);
@@ -175,20 +191,25 @@ namespace Item_Locator
             b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
             Game1.drawDialogueBox(xPos, yPos, UIWidth, UIHeight, false, true);
             Utility.drawTextWithShadow(b, TitleLabel.name, Game1.dialogueFont, new Vector2(TitleLabel.bounds.X, TitleLabel.bounds.Y), Color.Black);
-            Utility.drawTextWithShadow(b, MenuDesc.name, Game1.dialogueFont, new Vector2(MenuDesc.bounds.X, MenuDesc.bounds.Y), Color.Black);
-            locateButton.draw(b);
-            clearButton.draw(b);
+            getItem.Draw(b);
+           
+            locateButton?.draw(b);
+            clearButton?.draw(b);
+            finishedButton?.draw(b);
 
             //draws hovertext
-            if (!string.IsNullOrEmpty(locateButton.hoverText))
+            if (!string.IsNullOrEmpty(locateButton?.hoverText))
             {
                 drawHoverText(b, locateButton.hoverText, Game1.smallFont);
             }
-            if (!string.IsNullOrEmpty(clearButton.hoverText))
+            if (!string.IsNullOrEmpty(clearButton?.hoverText))
             {
                 drawHoverText(b, clearButton.hoverText, Game1.smallFont);
             }
-            getItemID.Draw(b);
+
+            //draws text if there are no chests found
+            if(noChestsFound != null)
+                Utility.drawTextWithShadow(b, noChestsFound.name, Game1.smallFont, new Vector2(noChestsFound.bounds.X, noChestsFound.bounds.Y), Color.Red);
             drawMouse(b);
         }
 
