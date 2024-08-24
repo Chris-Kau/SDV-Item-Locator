@@ -130,13 +130,21 @@ namespace Item_Locator
             {
                 if(SearchedItem is not null && Game1.activeClickableMenu is CustomItemMenu)
                 {
-                    Path_Finding.GetPaths(); //helps finds and draw paths
-                    if(ModEntry.paths.Count == 0)
+
+                    Path_Finding.GetPaths(); //helps find and draw paths
+                    List<Vector2> chestlocs = FindChests.get_chest_locs(Game1.player.currentLocation, SearchedItem);
+                    if((Path_Finding.pathCount == 0 || ModEntry.getPathsCount() == 0) && chestlocs.Count == 0)
                     {
-                        noChestsFound = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 50, 30,30), "No containers found :(");
+                        //add text if there were not paths found
+                        noChestsFound = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 50, 30,30), "No paths or containers found :(");
                     }
-                    else
+                    else if((Path_Finding.pathCount == 0  || ModEntry.getPathsCount() == 0) && chestlocs.Count > 0)
                     {
+                        noChestsFound = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 50, 30, 30), $"No paths found, {chestlocs.Count} containers found");
+
+                    }else
+                    {
+                        Console.WriteLine($"paths count: {ModEntry.getPathsCount()} or {Path_Finding.pathCount}, chestlocs count: {chestlocs.Count}");
                         Game1.activeClickableMenu = null; //close menu
                         noChestsFound = null;
                     }

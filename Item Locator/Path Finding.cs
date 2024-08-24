@@ -5,6 +5,8 @@ namespace Item_Locator
 {
     public class Path_Finding
     {
+
+        public static int pathCount = 0;
         /// <summary>
         /// Generates a list of all empty/walkable tiles based off player's location
         /// </summary>
@@ -80,7 +82,7 @@ namespace Item_Locator
         /// </summary>
         public static void GetPaths()
         {
-            //get player tile location
+            ModEntry.paths.Clear();
             Random random = new Random();
             GameLocation playerloc = Game1.player.currentLocation;
             List<Vector2> validChestLocs;
@@ -94,6 +96,7 @@ namespace Item_Locator
             {
                 Dictionary<Vector2, List<Vector2>> validEmptyTiles = genAdjList(validChestLocs);
                 ModEntry.paths = FindPathsBFS(validEmptyTiles, validChestLocs, playerTileLoc);
+                pathCount = ModEntry.paths.Count;
                 //assign random color to each path
                 foreach (var path in ModEntry.paths)
                 {
