@@ -32,11 +32,6 @@ namespace Item_Locator
             helper.Events.Display.WindowResized += this.resizeCustomMenu;
             helper.Events.Display.RenderedWorld += this.RenderedWorld;
         }
-
-        public static int getPathsCount()
-        {
-            return paths.Count;
-        }
         /*********
         ** Private methods
         *********/

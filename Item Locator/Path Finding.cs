@@ -1,12 +1,12 @@
 ﻿using StardewValley;
 using Microsoft.Xna.Framework;
+using xTile.Dimensions;
 
 namespace Item_Locator
 {
     public class Path_Finding
     {
-
-        public static int pathCount = 0;
+        public static bool invalidPlayerTile = false;
         /// <summary>
         /// Generates a list of all empty/walkable tiles based off player's location
         /// </summary>
@@ -17,11 +17,11 @@ namespace Item_Locator
             {
                 for (int y = 0; y < location.map.Layers[0].LayerHeight; y++)
                 {
-                    //checks to see if the tile x,y is on the map and if the player is able to walk through it.
-                    if (location.isTileOnMap(new Vector2(x,y)) && !location.IsTileBlockedBy(new Vector2(x, y),CollisionMask.All, CollisionMask.All, true))
+                    if(isEmptyTile(location, new Vector2(x,y)))
                     {
                         Empty_Tiles.Add(new Vector2(x, y));
                     }
+                    
                 }
             }
             return Empty_Tiles;
@@ -96,7 +96,6 @@ namespace Item_Locator
             {
                 Dictionary<Vector2, List<Vector2>> validEmptyTiles = genAdjList(validChestLocs);
                 ModEntry.paths = FindPathsBFS(validEmptyTiles, validChestLocs, playerTileLoc);
-                pathCount = ModEntry.paths.Count;
                 //assign random color to each path
                 foreach (var path in ModEntry.paths)
                 {
@@ -119,6 +118,13 @@ namespace Item_Locator
         {
             var start = playerLocation; //starting tile
             var paths = new List<List<Vector2>>(); //store all paths to all valid chests in here
+            //check to see if the player is standing on an empty tile
+            if(!isEmptyTile(Game1.player.currentLocation, start))
+            {
+                invalidPlayerTile = true;
+                return paths;
+            }
+            invalidPlayerTile = false;
             foreach(var target in targets)
             {
                 var path = solve(start, target, adjlist);
@@ -198,6 +204,16 @@ namespace Item_Locator
                 return path;
             }
             return new List<Vector2>();
+        }
+
+        private static bool isEmptyTile(GameLocation location, Vector2 tile)
+        {
+            //checks to see if the tile x,y is on the map and if the player is able to walk through it.
+            if (location.isTileOnMap(tile) && !location.IsTileBlockedBy(tile, CollisionMask.All, CollisionMask.All, true))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
