@@ -1,5 +1,6 @@
 ﻿using StardewValley;
 using Microsoft.Xna.Framework;
+using StardewValley.Locations;
 
 namespace Item_Locator
 {
@@ -11,8 +12,11 @@ namespace Item_Locator
         public static List<Vector2> get_chest_locs(GameLocation location, string i)
         {
             List<Vector2> chest_locs = new();
+            Vector2? farmFridge = getHouseFridgeItems(location, i);
+            if (farmFridge != null)
+                chest_locs.Add((Vector2)farmFridge);
             //first 2 for loops loop through all tiles on player's location map
-            for(int x = 0; x < location.map.Layers[0].LayerWidth; x++)
+            for (int x = 0; x < location.map.Layers[0].LayerWidth; x++)
             {
                 for(int y = 0; y < location.map.Layers[0].LayerHeight; y++)
                 {
@@ -46,6 +50,28 @@ namespace Item_Locator
                 }
             }
             return chest_locs;
+        }
+
+        private static Vector2? getHouseFridgeItems(GameLocation playerloc, string i)
+        {
+            GameLocation farmhouse = Game1.getLocationFromName("FarmHouse");
+            if(playerloc == farmhouse)
+            {
+                if (playerloc.GetFridgePosition() != null)
+                {
+                    Console.WriteLine($"Fridge Pos: {playerloc.GetFridgePosition()}");
+                    foreach(Item a in farmhouse.GetFridge().Items)
+                    {
+                        if (i.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return new Vector2(playerloc.GetFridgePosition().Value.X, playerloc.GetFridgePosition().Value.Y);
+                        }
+                    }
+                }
+
+            }
+
+            return null;
         }
     }
 }

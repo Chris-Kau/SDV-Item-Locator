@@ -86,9 +86,7 @@ namespace Item_Locator
             Random random = new Random();
             GameLocation playerloc = Game1.player.currentLocation;
             List<Vector2> validChestLocs;
-
             Vector2 playerTileLoc = Game1.player.Tile;
-
             //finds all chest locations that contain the searched item
             validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
 
