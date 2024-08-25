@@ -55,12 +55,12 @@ namespace Item_Locator
         private static Vector2? getHouseFridgeItems(GameLocation playerloc, string i)
         {
             GameLocation farmhouse = Game1.getLocationFromName("FarmHouse");
-            if(playerloc == farmhouse)
+            GameLocation islandFarmHouse = Game1.getLocationFromName("IslandFarmHouse");
+            if(playerloc == farmhouse || playerloc == islandFarmHouse)
             {
                 if (playerloc.GetFridgePosition() != null)
                 {
-                    Console.WriteLine($"Fridge Pos: {playerloc.GetFridgePosition()}");
-                    foreach(Item a in farmhouse.GetFridge().Items)
+                    foreach(Item a in playerloc.GetFridge().Items)
                     {
                         if (i.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
                         {
