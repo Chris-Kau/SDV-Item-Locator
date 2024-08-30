@@ -109,6 +109,7 @@ namespace Item_Locator
                         {
                             if(i.Equals(item.Name, StringComparison.OrdinalIgnoreCase))
                             {
+                                //add 1 just so the tile is centered with the junimo hut since the junimo hut is a 3x2
                                 JunimoHutLocations.Add(new Vector2(junimoHut.tileX.Value + 1, junimoHut.tileY.Value + 1));
                                 break;
                             }
