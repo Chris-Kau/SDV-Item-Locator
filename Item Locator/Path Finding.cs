@@ -41,7 +41,7 @@ namespace Item_Locator
             List<Vector2> empty_tiles = Find_Empty_Tiles(player_loc);
             foreach(var target in targets)
             {
-                empty_tiles.Add(target); //add the chest to the list of empty tiles to allow pathfind to it.
+                empty_tiles.Add(target); //add the chest to the list of empty tiles to allow pathfinding to it.
             }
             
             foreach (Vector2 p in empty_tiles) //Entire for loop is to get the neighboring walkable/empty tiles to add it to adj list

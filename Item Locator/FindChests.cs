@@ -18,6 +18,7 @@ namespace Item_Locator
             List<Vector2> chest_locs = new();
             Vector2? farmFridge = getHouseFridgeTile(location, i);
             List<Vector2> junimoHutsLocations = getJunimoHutTiles(location, i);
+            //add fridges and junimo huts to the container locations
             if (farmFridge != null)
                 chest_locs.Add((Vector2)farmFridge);
             if (junimoHutsLocations != null)
@@ -31,6 +32,8 @@ namespace Item_Locator
                     if(location.objects.ContainsKey(new Vector2(x, y)) && location.Objects[new Vector2(x,y)] is StardewValley.Objects.Chest chest)
                     {
                        //if we found a match in item names, add it to the chest_locs list
+
+                        //Check for junimo chest
                        if(chest.name == "Junimo Chest")
                         {
                             foreach (var a in Game1.player.team.GetOrCreateGlobalInventory("JunimoChests"))
@@ -43,6 +46,7 @@ namespace Item_Locator
                             }
                         }else
                         {
+                            //check for other types of chests that arent junom chests
                             foreach (Item a in chest.Items)
                             {
                                 if (i.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
@@ -59,12 +63,17 @@ namespace Item_Locator
             return chest_locs;
         }
 
+        /// <summary>
+        /// Returns the location of the farmhouse fridge or ginger island farm house fridge
+        /// </summary>
         private static Vector2? getHouseFridgeTile(GameLocation playerloc, string i)
         {
             GameLocation farmhouse = Game1.getLocationFromName("FarmHouse");
             GameLocation islandFarmHouse = Game1.getLocationFromName("IslandFarmHouse");
+            //check to see if the player is in their farm house or their farm house on ginger island
             if(playerloc == farmhouse || playerloc == islandFarmHouse)
             {
+                //check to see if there is a fridge because the starting house does not come with a fridge, if there are fridges, loop through its items
                 if (playerloc.GetFridgePosition() != null)
                 {
                     foreach(Item a in playerloc.GetFridge().Items)
@@ -79,19 +88,23 @@ namespace Item_Locator
 
             return null;
         }
-
+        /// <summary>
+        /// Returns a list of the Junimo Huts' tiles if there exists Junimo Huts with the searched item
+        /// </summary>
         private static List<Vector2> getJunimoHutTiles(GameLocation playerloc, string i)
         {
             List <Vector2> JunimoHutLocations = new();
             GameLocation playerFarm = Game1.getLocationFromName("Farm");
-            Farmer player = Game1.player;
             Farm farm = Game1.getFarm();
+            //make sure the player is on the farm
             if(playerloc == playerFarm)
             {
+                //loop through all buildings on the player's farm
                 foreach(Building building in farm.buildings)
                 {
                     if(building is JunimoHut junimoHut)
                     {
+                        //if there is a Junimo Hut, we loop through its items and look for the searched item.
                         foreach(Item item in junimoHut.GetOutputChest().Items)
                         {
                             if(i.Equals(item.Name, StringComparison.OrdinalIgnoreCase))
