@@ -1,6 +1,9 @@
-﻿using StardewValley;
+﻿using StardewModdingAPI;
+using StardewModdingAPI.Events;
+using StardewValley;
 using Microsoft.Xna.Framework;
 using StardewValley.Locations;
+using StardewValley.Buildings;
 
 namespace Item_Locator
 {
@@ -11,8 +14,9 @@ namespace Item_Locator
         /// </summary>
         public static List<Vector2> get_chest_locs(GameLocation location, string i)
         {
+            getJunimoHutTiles(location, i);
             List<Vector2> chest_locs = new();
-            Vector2? farmFridge = getHouseFridgeItems(location, i);
+            Vector2? farmFridge = getHouseFridgeTile(location, i);
             if (farmFridge != null)
                 chest_locs.Add((Vector2)farmFridge);
             //first 2 for loops loop through all tiles on player's location map
@@ -52,7 +56,7 @@ namespace Item_Locator
             return chest_locs;
         }
 
-        private static Vector2? getHouseFridgeItems(GameLocation playerloc, string i)
+        private static Vector2? getHouseFridgeTile(GameLocation playerloc, string i)
         {
             GameLocation farmhouse = Game1.getLocationFromName("FarmHouse");
             GameLocation islandFarmHouse = Game1.getLocationFromName("IslandFarmHouse");
@@ -70,6 +74,28 @@ namespace Item_Locator
                 }
             }
 
+            return null;
+        }
+
+        private static Vector2? getJunimoHutTiles(GameLocation playerloc, string i)
+        {
+            GameLocation playerFarm = Game1.getLocationFromName("Farm");
+            Farmer player = Game1.player;
+            Farm farm = Game1.getFarm();
+            if(playerloc == playerFarm)
+            {
+                foreach(Building building in farm.buildings)
+                {
+                    if(building is JunimoHut junimoHut)
+                    {
+                        foreach(Item item in junimoHut.GetOutputChest().Items)
+                        {
+                            Console.WriteLine($"JUNIMO HUT: {item.Name}");
+                        }
+                    }
+                }
+                
+            }
             return null;
         }
     }
