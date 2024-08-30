@@ -17,8 +17,11 @@ namespace Item_Locator
             getJunimoHutTiles(location, i);
             List<Vector2> chest_locs = new();
             Vector2? farmFridge = getHouseFridgeTile(location, i);
+            List<Vector2> junimoHutsLocations = getJunimoHutTiles(location, i);
             if (farmFridge != null)
                 chest_locs.Add((Vector2)farmFridge);
+            if (junimoHutsLocations != null)
+                chest_locs.AddRange(junimoHutsLocations);
             //first 2 for loops loop through all tiles on player's location map
             for (int x = 0; x < location.map.Layers[0].LayerWidth; x++)
             {
@@ -77,8 +80,9 @@ namespace Item_Locator
             return null;
         }
 
-        private static Vector2? getJunimoHutTiles(GameLocation playerloc, string i)
+        private static List<Vector2> getJunimoHutTiles(GameLocation playerloc, string i)
         {
+            List <Vector2> JunimoHutLocations = new();
             GameLocation playerFarm = Game1.getLocationFromName("Farm");
             Farmer player = Game1.player;
             Farm farm = Game1.getFarm();
@@ -90,13 +94,16 @@ namespace Item_Locator
                     {
                         foreach(Item item in junimoHut.GetOutputChest().Items)
                         {
-                            Console.WriteLine($"JUNIMO HUT: {item.Name}");
+                            if(i.Equals(item.Name, StringComparison.OrdinalIgnoreCase))
+                            {
+                                JunimoHutLocations.Add(new Vector2(junimoHut.tileX.Value + 1, junimoHut.tileY.Value + 1));
+                                break;
+                            }
                         }
                     }
                 }
-                
             }
-            return null;
+            return JunimoHutLocations;
         }
     }
 }
