@@ -3,6 +3,7 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using GenericModConfigMenu;
 
 namespace Item_Locator
 {
@@ -18,13 +19,14 @@ namespace Item_Locator
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
-            //Opens up the custom menu
             tileHighlight = helper.ModContent.Load<Texture2D>("/assets/tileColor.png");
+            //Opens up the custom menu
             helper.Events.Input.ButtonPressed += this.OpenItemMenu;
             //resizes menu on window resize
             helper.Events.Display.WindowResized += this.resizeCustomMenu;
             helper.Events.Display.RenderedWorld += this.RenderedWorld;
             helper.Events.Player.Warped += this.ChangedLocation;
+            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         }
         /*********
         ** Private methods
@@ -97,6 +99,21 @@ namespace Item_Locator
             {
                 Game1.activeClickableMenu = new CustomItemMenu();
             }
+        }
+
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            // get Generic Mod Config Menu's API (if it's installed)
+            var configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (configMenu is null)
+                return;
+
+            // register mod
+            configMenu.Register(
+                mod: this.ModManifest,
+                reset: () => this.Config = new ModConfig(),
+                save: () => this.Helper.WriteConfig(this.Config)
+            );
         }
     }
 }
