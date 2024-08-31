@@ -7,18 +7,25 @@ using GenericModConfigMenu;
 
 namespace Item_Locator
 {
-    /// <summary>The mod entry point.</summary>
     internal sealed class ModEntry : Mod
     {
         Texture2D? tileHighlight;
+
         //public static to allow access in CustomItemMenu.cs
         public static bool shouldDraw = false; 
         public static Dictionary<List<Vector2>, Color> pathColors = new();
         public static List<List<Vector2>> paths = new();
+        private ModConfig Config { get; set; } = new ModConfig();
+        public SButton openMenuKeybind;
+
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
+            this.Config = helper.ReadConfig<ModConfig>();
+            SButton openMenuKeybind = this.Config.openMenuKey;
+            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+
             tileHighlight = helper.ModContent.Load<Texture2D>("/assets/tileColor.png");
             //Opens up the custom menu
             helper.Events.Input.ButtonPressed += this.OpenItemMenu;
@@ -26,11 +33,15 @@ namespace Item_Locator
             helper.Events.Display.WindowResized += this.resizeCustomMenu;
             helper.Events.Display.RenderedWorld += this.RenderedWorld;
             helper.Events.Player.Warped += this.ChangedLocation;
-            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+
         }
         /*********
         ** Private methods
         *********/
+
+
+
+
         /// <summary>
         /// Constantly checks to see if there are paths available to draw and will call the DrawPath function
         /// </summary>
@@ -82,7 +93,7 @@ namespace Item_Locator
             if (!Context.IsWorldReady)
                 return;
             //Keybind O opens the search menu
-            if(e.Button is SButton.O && Game1.activeClickableMenu is null && Context.IsPlayerFree)
+            if(e.Button == this.Config.openMenuKey && Game1.activeClickableMenu is null && Context.IsPlayerFree)
             {
                 Game1.activeClickableMenu = new CustomItemMenu();
             }
@@ -101,7 +112,7 @@ namespace Item_Locator
             }
         }
 
-        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
             // get Generic Mod Config Menu's API (if it's installed)
             var configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
@@ -114,6 +125,13 @@ namespace Item_Locator
                 reset: () => this.Config = new ModConfig(),
                 save: () => this.Helper.WriteConfig(this.Config)
             );
+
+            configMenu.AddKeybind(
+                mod: this.ModManifest,
+                getValue: () => this.Config.openMenuKey,
+                setValue: value => this.Config.openMenuKey = value,
+                name: () => "Change Keybind: "
+                );
         }
     }
 }
