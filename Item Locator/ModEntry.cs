@@ -24,6 +24,7 @@ namespace Item_Locator
             //resizes menu on window resize
             helper.Events.Display.WindowResized += this.resizeCustomMenu;
             helper.Events.Display.RenderedWorld += this.RenderedWorld;
+            helper.Events.Player.Warped += this.changedLocation;
         }
         /*********
         ** Private methods
@@ -55,6 +56,19 @@ namespace Item_Locator
 
             }
         }
+
+        /// <summary>
+        /// Clear paths when the user enters a new map
+        /// </summary>
+        private void changedLocation(object sender, WarpedEventArgs e)
+        {
+            if(e.IsLocalPlayer)
+            {
+                paths.Clear(); // clear all paths
+                shouldDraw = false;
+            }
+        }
+
 
         /// <summary>
         /// Opens the item search menu upon clicking O
