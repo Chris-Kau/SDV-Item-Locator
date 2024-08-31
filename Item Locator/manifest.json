@@ -2,7 +2,7 @@
   "Name": "Item Locator",
   "Author": "MysticalAsian & mintcat3",
   "Version": "1.0.0",
-  "Description": "Allows the user to search surround chests for a specified item",
+  "Description": "Draws the shortest distance path to every container that contains the specified item",
   "UniqueID": "mamc3.ItemLocator",
   "EntryDll": "Item Locator.dll",
   "MinimumApiVersion": "4.0.0",
