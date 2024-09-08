@@ -13,6 +13,8 @@ namespace Item_Locator
         public static ClickableTextureComponent? locateButton;
         public static ClickableTextureComponent? clearButton;
         public static ClickableTextureComponent? clearInputButton;
+        //History Buttons
+        public static List<ClickableTextureComponent> listOfHistoryButtons = new();
         static int UIWidth = 632;
         static int UIHeight = 500;
         //Takes user's zoomlevel and uiscale into account to center menu based off user's settings too
@@ -41,7 +43,6 @@ namespace Item_Locator
                 Y = TitleLabel.bounds.Y + TitleLabel.bounds.Height + 30,
                 Width = TitleLabel.bounds.Width,
             };
-
             getItem.Text = SearchedItem;
 
             locateButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) + (14 * 6), getItem.Y + 75 + (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15),6f);
