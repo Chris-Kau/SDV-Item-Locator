@@ -145,7 +145,7 @@ namespace Item_Locator
                 {
                     Game1.playSound("select");
                     Path_Finding.GetPaths(); //helps find and draw paths
-                    List<Vector2> chestlocs = FindChests.get_chest_locs(Game1.player.currentLocation, SearchedItem);
+                    List<Vector2> chestlocs = FindContainers.get_container_locs(Game1.player.currentLocation, SearchedItem);
                     if(Path_Finding.invalidPlayerTile)
                     {
                         errorMessageText = "Please stand in a valid tile";

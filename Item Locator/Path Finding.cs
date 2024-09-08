@@ -88,7 +88,7 @@ namespace Item_Locator
             List<Vector2> validChestLocs;
             Vector2 playerTileLoc = Game1.player.Tile;
             //finds all chest locations that contain the searched item
-            validChestLocs = FindChests.get_chest_locs(playerloc, CustomItemMenu.SearchedItem);
+            validChestLocs = FindContainers.get_container_locs(playerloc, CustomItemMenu.SearchedItem);
 
             if (validChestLocs.Count > 0)
             {

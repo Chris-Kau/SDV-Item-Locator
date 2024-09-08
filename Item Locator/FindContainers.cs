@@ -7,12 +7,12 @@ using StardewValley.Buildings;
 
 namespace Item_Locator
 {
-    public class FindChests
+    public class FindContainers
     {
         /// <summary>
         /// Returns a list of tiles that have a Chest containing the specified item
         /// </summary>
-        public static List<Vector2> get_chest_locs(GameLocation location, string i)
+        public static List<Vector2> get_container_locs(GameLocation location, string i)
         {
             getJunimoHutTiles(location, i);
             List<Vector2> chest_locs = new();
