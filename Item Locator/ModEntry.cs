@@ -15,6 +15,7 @@ namespace Item_Locator
         public static bool shouldDraw = false; 
         public static Dictionary<List<Vector2>, Color> pathColors = new();
         public static List<List<Vector2>> paths = new();
+        public static List<String> locateHistory = new();
         private ModConfig Config { get; set; } = new ModConfig();
         public SButton openMenuKeybind;
 
@@ -23,6 +24,7 @@ namespace Item_Locator
         public override void Entry(IModHelper helper)
         {
             this.Config = helper.ReadConfig<ModConfig>();
+            locateHistory = this.Config.locateHistory;
             SButton openMenuKeybind = this.Config.openMenuKey;
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
 

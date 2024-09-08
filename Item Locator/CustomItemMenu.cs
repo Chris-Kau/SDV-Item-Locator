@@ -163,6 +163,7 @@ namespace Item_Locator
                         errorMessageText = "";
                     }
                     errorMessage = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 75, 30, 30), errorMessageText);
+                    changeLocateHistory(ModEntry.locateHistory, SearchedItem);
                 }
                 
             }
@@ -277,6 +278,15 @@ namespace Item_Locator
             //ensures that it stays in the same area despire window dimensions
             xPos = Math.Max(0, Math.Min(xPos, Game1.viewport.Width - UIWidth));
             yPos = Math.Max(0, Math.Min(yPos, Game1.viewport.Height - UIHeight));
+        }
+
+        private void changeLocateHistory(List<String> locHist, String item)
+        {
+            locHist.Insert(0, item);
+            while (locHist.Count > 5)
+            {
+                locHist.RemoveAt(locHist.Count - 1);
+            }
         }
     }
 }
