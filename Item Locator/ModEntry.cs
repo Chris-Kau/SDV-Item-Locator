@@ -15,9 +15,11 @@ namespace Item_Locator
         public static bool shouldDraw = false; 
         public static Dictionary<List<Vector2>, Color> pathColors = new();
         public static List<List<Vector2>> paths = new();
-        public static List<String> locateHistory = new();
+
         private ModConfig Config { get; set; } = new ModConfig();
         public SButton openMenuKeybind;
+        public static List<string>? locateHistory = new();
+        public static bool updateLocateHistory = false;
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
@@ -45,10 +47,17 @@ namespace Item_Locator
 
 
         /// <summary>
-        /// Constantly checks to see if there are paths available to draw and will call the DrawPath function
+        /// Helps Draw paths to player's screens and update config file.
         /// </summary>
         private void RenderedWorld(object? sender, RenderedWorldEventArgs e)
         {
+            //updateLocateHistory writes to the config file to save the LocateHistory
+            if(updateLocateHistory == true)
+            {
+                this.Helper.WriteConfig(this.Config);
+                updateLocateHistory = false;
+            }
+            //Draws path to player's screens when appropriate
             if(paths.Count > 0 && shouldDraw == true)
             {
                 DrawPath(e, paths);
