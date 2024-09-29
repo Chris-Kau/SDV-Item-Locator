@@ -3,6 +3,7 @@ using StardewValley.Menus;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using StardewValley.Extensions;
 namespace Item_Locator
 {
     public class CustomItemMenu : IClickableMenu
@@ -16,12 +17,18 @@ namespace Item_Locator
         //History Buttons
         public static List<ClickableTextureComponent> listOfHistoryButtons = new();
         public static List<Rectangle> listOfHistoryButtonsRects = new();
+        public static List<ClickableComponent> listOfHistoryButtonsText = new();
         static int UIWidth = 632;
         static int UIHeight = 500;
+        static int UIHistoryWidth = 300;
+        static int UIHistoryHeight = 500;
         //Takes user's zoomlevel and uiscale into account to center menu based off user's settings too
         static int xPos = (int)((Game1.viewport.Width * Game1.options.zoomLevel / Game1.options.uiScale / 2) - (UIWidth / 2));
         static int yPos = (int)((Game1.viewport.Height * Game1.options.zoomLevel / Game1.options.uiScale / 2) - UIHeight);
+        static int xPosUIHistory = xPos - 275;
+        static int yPosUIHistory = yPos;
         ClickableComponent TitleLabel;
+        ClickableComponent HistoryLabel;
         ClickableComponent? errorMessage;
         TextBox getItem;
         Rectangle getItemRect;
@@ -35,8 +42,11 @@ namespace Item_Locator
             yPos = (int)((Game1.viewport.Height * Game1.options.zoomLevel / Game1.options.uiScale / 2) - UIHeight);
             xPos = Math.Max(0, Math.Min(xPos, Game1.viewport.Width - UIWidth));
             yPos = Math.Max(0, Math.Min(yPos, Game1.viewport.Height - UIHeight));
+            xPosUIHistory = xPos - 275;
+            yPosUIHistory = yPos;
             Vector2 spaceSize = Game1.smallFont.MeasureString("   "); //used to artifically justify-center for text in TitleLabel
             TitleLabel = new ClickableComponent(new Rectangle(xPos + (UIWidth / 2) - ((UIWidth - 400) / 2) - (int)spaceSize.X, yPos + 125, UIWidth - 400, 64), "   Item Locator\nEnter Item Name:");
+            HistoryLabel = new ClickableComponent(new Rectangle(xPosUIHistory + (int)Game1.smallFont.MeasureString("History").X, yPosUIHistory + 125, UIHistoryWidth - 400, 64), "History:");
             getItem = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), Game1.smallFont, Game1.textColor)
             {
                 X = xPos + (UIWidth / 2) - (TitleLabel.bounds.Width / 2) - 35,
@@ -57,14 +67,16 @@ namespace Item_Locator
             //create 5 history buttons
             listOfHistoryButtons.Clear(); //clear to prevent duplicates when reopening menu
             listOfHistoryButtonsRects.Clear();
+            listOfHistoryButtonsText.Clear();
             ClickableTextureComponent temp;
             for (int i = 0; i < 5; i++)
             {
-                temp = new ClickableTextureComponent(new Rectangle(xPos - (9 * 6), yPos + 150 + (i * 75), 9, 9), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(403, 373, 9, 9), 6f);
-                temp.name = ModEntry.locateHistory[i];
-                Rectangle irect = new Rectangle(temp.bounds.X - 50, temp.bounds.Y, 50 + temp.bounds.Width * (int)temp.scale, temp.bounds.Height * (int)temp.scale);
+                temp = new ClickableTextureComponent(new Rectangle(xPosUIHistory + (16 * 2) + 15, HistoryLabel.bounds.Y + HistoryLabel.bounds.Height + (i * 50), 16, 16), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(274, 284, 16, 16), 2f);
+                Rectangle irect = new Rectangle(temp.bounds.X, temp.bounds.Y,temp.bounds.Width * (int)temp.scale, temp.bounds.Height * (int)temp.scale);
+                ClickableComponent itext = new ClickableComponent(new Rectangle(HistoryLabel.bounds.X, HistoryLabel.bounds.Y + HistoryLabel.bounds.Height + (i * 50), HistoryLabel.bounds.Width, HistoryLabel.bounds.Height) ,ModEntry.locateHistory[i]);
                 listOfHistoryButtonsRects.Add(irect);
                 listOfHistoryButtons.Add(temp);
+                listOfHistoryButtonsText.Add(itext);
             }
 
 
@@ -156,31 +168,7 @@ namespace Item_Locator
                 scaleTransition(locateButton, 5.7f, -0.08f);
                 scaleTransition(locateButton, 6f, 0.08f);
 
-                if (SearchedItem is not null && Game1.activeClickableMenu is CustomItemMenu)
-                {
-                    Game1.playSound("select");
-                    Path_Finding.GetPaths(); //finds and draw paths
-                    List<Vector2> chestlocs = FindContainers.get_container_locs(Game1.player.currentLocation, SearchedItem);
-                    if(Path_Finding.invalidPlayerTile)
-                    {
-                        errorMessageText = "Please stand in a valid tile";
-                    }
-                    else if(ModEntry.paths.Count == 0 && chestlocs.Count == 0)
-                    {
-                        errorMessageText = "No paths or containers found :(";
-                    }
-                    else if(ModEntry.paths.Count == 0 && chestlocs.Count > 0)
-                    {
-                        errorMessageText = $"No paths found, but {chestlocs.Count} containers found";
-                    }else
-                    {
-                        Game1.activeClickableMenu = null; //close menu
-                        errorMessageText = "";
-                    }
-                    //make text to display on user's screen with the error message
-                    errorMessage = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 75, 30, 30), errorMessageText);
-                    changeLocateHistory(ModEntry.locateHistory, SearchedItem);
-                }
+                ClickLocate(true);
                 
             }
             if(clearButtonRect.Contains(x,y))
@@ -197,6 +185,62 @@ namespace Item_Locator
                 scaleTransition(clearInputButton, 0.7f, 0.02f);
                 getItem.Text = "";
                 SearchedItem = "";
+            }
+            for(int i = 0; i < listOfHistoryButtons.Count; i++)
+            {
+                if (listOfHistoryButtonsRects[i].Contains(x, y))
+                {
+                    SearchedItem = listOfHistoryButtonsText[i].name;
+                    ClickLocate(false);
+                    Console.WriteLine($"Name: {listOfHistoryButtonsText[i].name}");
+                }
+            }
+        }
+        public void ClickLocate(bool isHistory)
+        {
+            if (SearchedItem is not null && Game1.activeClickableMenu is CustomItemMenu)
+            {
+                Console.WriteLine($"item: {SearchedItem}");
+                Game1.playSound("select");
+                Path_Finding.GetPaths(); //finds and draw paths
+                List<Vector2> chestlocs = FindContainers.get_container_locs(Game1.player.currentLocation, SearchedItem);
+                if (Path_Finding.invalidPlayerTile)
+                {
+                    errorMessageText = "Please stand in a valid tile";
+                }
+                else if (ModEntry.paths.Count == 0 && chestlocs.Count == 0)
+                {
+                    errorMessageText = "No paths or containers found :(";
+                }
+                else if (ModEntry.paths.Count == 0 && chestlocs.Count > 0)
+                {
+                    errorMessageText = $"No paths found, but {chestlocs.Count} containers found";
+                }
+                else
+                {
+                    Game1.activeClickableMenu = null; //close menu
+                    errorMessageText = "";
+                }
+                //make text to display on user's screen with the error message
+                errorMessage = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 75, 30, 30), errorMessageText);
+                if(isHistory)
+                {
+                    changeLocateHistory(ModEntry.locateHistory, SearchedItem);
+                }
+                listOfHistoryButtons.Clear(); //clear to prevent duplicates when reopening menu
+                listOfHistoryButtonsRects.Clear();
+                listOfHistoryButtonsText.Clear();
+                ClickableTextureComponent temp;
+                for (int i = 0; i < 5; i++)
+                {
+                    temp = new ClickableTextureComponent(new Rectangle(xPosUIHistory + (16 * 2) + 15, HistoryLabel.bounds.Y + HistoryLabel.bounds.Height + (i * 50), 16, 16), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(274, 284, 16, 16), 2f);
+                    Rectangle irect = new Rectangle(temp.bounds.X, temp.bounds.Y, temp.bounds.Width * (int)temp.scale, temp.bounds.Height * (int)temp.scale);
+                    ClickableComponent itext = new ClickableComponent(new Rectangle(HistoryLabel.bounds.X, HistoryLabel.bounds.Y + HistoryLabel.bounds.Height + (i * 50), HistoryLabel.bounds.Width, HistoryLabel.bounds.Height), ModEntry.locateHistory[i]);
+                    listOfHistoryButtonsRects.Add(irect);
+                    listOfHistoryButtons.Add(temp);
+                    listOfHistoryButtonsText.Add(itext);
+                }
+
             }
         }
         /// <summary>
@@ -243,11 +287,11 @@ namespace Item_Locator
             for (int i = 0; i < listOfHistoryButtons.Count; i++){
                 if (listOfHistoryButtonsRects[i].Contains(x, y))
                 {
-                    scaleTransition(listOfHistoryButtons[i], 6.3f, 0.08f);
+                    scaleTransition(listOfHistoryButtons[i], 2.3f, 0.04f);
                 }
                 else
                 {
-                    scaleTransition(listOfHistoryButtons[i], 6f, -0.08f);
+                    scaleTransition(listOfHistoryButtons[i], 2f, -0.04f);
                 }
             }
 
@@ -262,7 +306,10 @@ namespace Item_Locator
         {
             b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
             Game1.drawDialogueBox(xPos, yPos, UIWidth, UIHeight, false, true);
+            Game1.drawDialogueBox(xPos - 275, yPos, 300, UIHeight, false, true);
             Utility.drawTextWithShadow(b, TitleLabel.name, Game1.dialogueFont, new Vector2(TitleLabel.bounds.X, TitleLabel.bounds.Y), Color.Black);
+            Utility.drawTextWithShadow(b, HistoryLabel.name, Game1.dialogueFont, new Vector2(HistoryLabel.bounds.X, HistoryLabel.bounds.Y), Color.Black);
+
             getItem.Draw(b);
            
             locateButton?.draw(b);
@@ -272,8 +319,9 @@ namespace Item_Locator
             for(int i = 0; i < listOfHistoryButtons.Count; i++)
             {
                 ClickableTextureComponent button = listOfHistoryButtons[i];
-                Rectangle destinationRectangle = new Rectangle(button.bounds.X - 50,button.bounds.Y, (int)(50 + button.sourceRect.Width * button.scale), (int)(button.sourceRect.Height * button.scale));
-                b.Draw(Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), destinationRectangle, button.sourceRect, Color.White);
+                button.draw(b);
+                Utility.drawTextWithShadow(b, listOfHistoryButtonsText[i].name, Game1.smallFont, new Vector2(listOfHistoryButtonsText[i].bounds.X, listOfHistoryButtonsText[i].bounds.Y), Color.Black);
+
             }
 
             //draws text if there are no chests found
@@ -314,10 +362,14 @@ namespace Item_Locator
             //ensures that it stays in the same area despire window dimensions
             xPos = Math.Max(0, Math.Min(xPos, Game1.viewport.Width - UIWidth));
             yPos = Math.Max(0, Math.Min(yPos, Game1.viewport.Height - UIHeight));
+
+            xPosUIHistory = xPos - 275;
+            yPosUIHistory = yPos;
         }
 
         private void changeLocateHistory(List<string> locHist, string item)
         {
+            Console.WriteLine("In changeLocateHistory");
             locHist.Insert(0, item);
             while (locHist.Count > 5)
             {
