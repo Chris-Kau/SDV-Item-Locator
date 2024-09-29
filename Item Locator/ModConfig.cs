@@ -5,7 +5,7 @@ using System.Collections;
 public sealed class ModConfig
 {
     public SButton openMenuKey { get; set; }
-    public List<string>? locateHistory { get; set; }
+    public List<string> locateHistory { get; set; }
 
 
     public ModConfig()

@@ -18,7 +18,7 @@ namespace Item_Locator
 
         private ModConfig Config { get; set; } = new ModConfig();
         public SButton openMenuKeybind;
-        public static List<string>? locateHistory = new();
+        public static List<string> locateHistory = new();
         public static bool updateLocateHistory = false;
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
