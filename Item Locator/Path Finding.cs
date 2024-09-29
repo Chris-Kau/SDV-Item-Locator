@@ -46,7 +46,7 @@ namespace Item_Locator
             
             foreach (Vector2 p in empty_tiles) //Entire for loop is to get the neighboring walkable/empty tiles to add it to adj list
             {
-                List<Vector2> temp = [];
+                List<Vector2> temp = new();
                 foreach (Vector2 o in empty_tiles)
                 {
                     if ((new Vector2(p.X - 1, p.Y)) == o)
