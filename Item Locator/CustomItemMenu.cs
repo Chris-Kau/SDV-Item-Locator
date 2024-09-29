@@ -145,7 +145,7 @@ namespace Item_Locator
                 if (SearchedItem is not null && Game1.activeClickableMenu is CustomItemMenu)
                 {
                     Game1.playSound("select");
-                    Path_Finding.GetPaths(); //helps find and draw paths
+                    Path_Finding.GetPaths(); //finds and draw paths
                     List<Vector2> chestlocs = FindContainers.get_container_locs(Game1.player.currentLocation, SearchedItem);
                     if(Path_Finding.invalidPlayerTile)
                     {
@@ -163,6 +163,7 @@ namespace Item_Locator
                         Game1.activeClickableMenu = null; //close menu
                         errorMessageText = "";
                     }
+                    //make text to display on user's screen with the error message
                     errorMessage = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 75, 30, 30), errorMessageText);
                     changeLocateHistory(ModEntry.locateHistory, SearchedItem);
                 }
@@ -288,6 +289,7 @@ namespace Item_Locator
             {
                 locHist.RemoveAt(locHist.Count - 1);
             }
+            ModEntry.updateLocateHistory = true; //when true, it will be caught in ModEntry.RenderedWorld and is used to save the location history to config file.
         }
     }
 }
