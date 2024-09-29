@@ -15,6 +15,7 @@ namespace Item_Locator
         public static ClickableTextureComponent? clearInputButton;
         //History Buttons
         public static List<ClickableTextureComponent> listOfHistoryButtons = new();
+        public static List<Rectangle> listOfHistoryButtonsRects = new();
         static int UIWidth = 632;
         static int UIHeight = 500;
         //Takes user's zoomlevel and uiscale into account to center menu based off user's settings too
@@ -27,8 +28,7 @@ namespace Item_Locator
         Rectangle locateButtonRect;
         Rectangle clearButtonRect;
         Rectangle clearInputButtonRect;
-
-        public CustomItemMenu()
+    public CustomItemMenu()
         {
             //re-assign x/y pos to ensure correct scaling of game window
             xPos = (int)((Game1.viewport.Width * Game1.options.zoomLevel / Game1.options.uiScale / 2) - (UIWidth / 2));
@@ -50,10 +50,24 @@ namespace Item_Locator
             
             clearButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) - (14 * 6 * 2), getItem.Y + 75 + (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(269, 471, 14, 15), 6f);
             clearButtonRect = new Rectangle(clearButton.bounds.X, clearButton.bounds.Y, clearButton.bounds.Width * (int)clearButton.scale, clearButton.bounds.Height * (int)clearButton.scale);
-
+     
             clearInputButton = new ClickableTextureComponent(new Rectangle(getItem.X + 10 + getItem.Width, getItem.Y, 64, 64), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(192,256,64,64), 0.7f);
             clearInputButtonRect = new Rectangle(clearInputButton.bounds.X, clearInputButton.bounds.Y, (int)(clearInputButton.bounds.Width * clearInputButton.scale), (int)(clearInputButton.bounds.Height * clearInputButton.scale));
             getItem.OnEnterPressed += EnterPressed;
+            //create 5 history buttons
+            listOfHistoryButtons.Clear(); //clear to prevent duplicates when reopening menu
+            listOfHistoryButtonsRects.Clear();
+            ClickableTextureComponent temp;
+            for (int i = 0; i < 5; i++)
+            {
+                temp = new ClickableTextureComponent(new Rectangle(xPos - (9 * 6), yPos + 150 + (i * 75), 9, 9), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(403, 373, 9, 9), 6f);
+                temp.name = ModEntry.locateHistory[i];
+                Rectangle irect = new Rectangle(temp.bounds.X - 50, temp.bounds.Y, 50 + temp.bounds.Width * (int)temp.scale, temp.bounds.Height * (int)temp.scale);
+                listOfHistoryButtonsRects.Add(irect);
+                listOfHistoryButtons.Add(temp);
+            }
+
+
         }
 
         /// <summary>
@@ -219,13 +233,26 @@ namespace Item_Locator
             if(clearInputButtonRect.Contains(x,y))
             {
                 clearInputButton.hoverText = "Clear Input";
-                scaleTransition(clearInputButton, 0.73f, 0.02f);
+                scaleTransition(clearInputButton, 0.73f, 0.08f);
             }
             else
             {
                 clearInputButton.hoverText = "";
-                scaleTransition(clearInputButton, 0.7f, -0.02f);
+                scaleTransition(clearInputButton, 0.7f, -0.08f);
             }
+            for (int i = 0; i < listOfHistoryButtons.Count; i++){
+                if (listOfHistoryButtonsRects[i].Contains(x, y))
+                {
+                    scaleTransition(listOfHistoryButtons[i], 6.3f, 0.08f);
+                }
+                else
+                {
+                    scaleTransition(listOfHistoryButtons[i], 6f, -0.08f);
+                }
+            }
+
+
+        
 
         }
         /// <summary>
@@ -241,6 +268,13 @@ namespace Item_Locator
             locateButton?.draw(b);
             clearButton?.draw(b);
             clearInputButton?.draw(b);
+
+            for(int i = 0; i < listOfHistoryButtons.Count; i++)
+            {
+                ClickableTextureComponent button = listOfHistoryButtons[i];
+                Rectangle destinationRectangle = new Rectangle(button.bounds.X - 50,button.bounds.Y, (int)(50 + button.sourceRect.Width * button.scale), (int)(button.sourceRect.Height * button.scale));
+                b.Draw(Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), destinationRectangle, button.sourceRect, Color.White);
+            }
 
             //draws text if there are no chests found
             if (errorMessage != null)
@@ -282,7 +316,7 @@ namespace Item_Locator
             yPos = Math.Max(0, Math.Min(yPos, Game1.viewport.Height - UIHeight));
         }
 
-        private void changeLocateHistory(List<String> locHist, String item)
+        private void changeLocateHistory(List<string> locHist, string item)
         {
             locHist.Insert(0, item);
             while (locHist.Count > 5)
