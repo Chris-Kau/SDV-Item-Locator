@@ -6,5 +6,5 @@
   "UniqueID": "mamc3.ItemLocator",
   "EntryDll": "Item Locator.dll",
   "MinimumApiVersion": "4.0.0",
-  "UpdateKeys": []
+  "UpdateKeys": ["Nexus:27409"]
 }
