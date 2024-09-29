@@ -15,9 +15,9 @@ namespace Item_Locator
         public static ClickableTextureComponent? clearButton;
         public static ClickableTextureComponent? clearInputButton;
         //History Buttons
-        public static List<ClickableTextureComponent> listOfHistoryButtons = new();
-        public static List<Rectangle> listOfHistoryButtonsRects = new();
-        public static List<ClickableComponent> listOfHistoryButtonsText = new();
+        public static List<ClickableTextureComponent> listOfHistoryButtons = new(); //used to hold the buttons of each history item
+        public static List<Rectangle> listOfHistoryButtonsRects = new(); //used to detect clicks
+        public static List<ClickableComponent> listOfHistoryButtonsText = new(); //used to hold the actual item names
         static int UIWidth = 632;
         static int UIHeight = 500;
         static int UIHistoryWidth = 300;
@@ -64,20 +64,9 @@ namespace Item_Locator
             clearInputButton = new ClickableTextureComponent(new Rectangle(getItem.X + 10 + getItem.Width, getItem.Y, 64, 64), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(192,256,64,64), 0.7f);
             clearInputButtonRect = new Rectangle(clearInputButton.bounds.X, clearInputButton.bounds.Y, (int)(clearInputButton.bounds.Width * clearInputButton.scale), (int)(clearInputButton.bounds.Height * clearInputButton.scale));
             getItem.OnEnterPressed += EnterPressed;
+
             //create 5 history buttons
-            listOfHistoryButtons.Clear(); //clear to prevent duplicates when reopening menu
-            listOfHistoryButtonsRects.Clear();
-            listOfHistoryButtonsText.Clear();
-            ClickableTextureComponent temp;
-            for (int i = 0; i < 5; i++)
-            {
-                temp = new ClickableTextureComponent(new Rectangle(xPosUIHistory + (16 * 2) + 15, HistoryLabel.bounds.Y + HistoryLabel.bounds.Height + (i * 50), 16, 16), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(274, 284, 16, 16), 2f);
-                Rectangle irect = new Rectangle(temp.bounds.X, temp.bounds.Y,temp.bounds.Width * (int)temp.scale, temp.bounds.Height * (int)temp.scale);
-                ClickableComponent itext = new ClickableComponent(new Rectangle(HistoryLabel.bounds.X, HistoryLabel.bounds.Y + HistoryLabel.bounds.Height + (i * 50), HistoryLabel.bounds.Width, HistoryLabel.bounds.Height) ,ModEntry.locateHistory[i]);
-                listOfHistoryButtonsRects.Add(irect);
-                listOfHistoryButtons.Add(temp);
-                listOfHistoryButtonsText.Add(itext);
-            }
+            updateHistoryList();
 
 
         }
@@ -186,13 +175,13 @@ namespace Item_Locator
                 getItem.Text = "";
                 SearchedItem = "";
             }
+
             for(int i = 0; i < listOfHistoryButtons.Count; i++)
             {
                 if (listOfHistoryButtonsRects[i].Contains(x, y))
                 {
                     SearchedItem = listOfHistoryButtonsText[i].name;
                     ClickLocate(false);
-                    Console.WriteLine($"Name: {listOfHistoryButtonsText[i].name}");
                 }
             }
         }
@@ -200,7 +189,6 @@ namespace Item_Locator
         {
             if (SearchedItem is not null && Game1.activeClickableMenu is CustomItemMenu)
             {
-                Console.WriteLine($"item: {SearchedItem}");
                 Game1.playSound("select");
                 Path_Finding.GetPaths(); //finds and draw paths
                 List<Vector2> chestlocs = FindContainers.get_container_locs(Game1.player.currentLocation, SearchedItem);
@@ -223,23 +211,11 @@ namespace Item_Locator
                 }
                 //make text to display on user's screen with the error message
                 errorMessage = new ClickableComponent(new Rectangle(getItem.X, getItem.Y + 75, 30, 30), errorMessageText);
-                if(isHistory)
+                if(isHistory) //checks to see if the user located the item from the history window, if they did not, then update history
                 {
                     changeLocateHistory(ModEntry.locateHistory, SearchedItem);
                 }
-                listOfHistoryButtons.Clear(); //clear to prevent duplicates when reopening menu
-                listOfHistoryButtonsRects.Clear();
-                listOfHistoryButtonsText.Clear();
-                ClickableTextureComponent temp;
-                for (int i = 0; i < 5; i++)
-                {
-                    temp = new ClickableTextureComponent(new Rectangle(xPosUIHistory + (16 * 2) + 15, HistoryLabel.bounds.Y + HistoryLabel.bounds.Height + (i * 50), 16, 16), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(274, 284, 16, 16), 2f);
-                    Rectangle irect = new Rectangle(temp.bounds.X, temp.bounds.Y, temp.bounds.Width * (int)temp.scale, temp.bounds.Height * (int)temp.scale);
-                    ClickableComponent itext = new ClickableComponent(new Rectangle(HistoryLabel.bounds.X, HistoryLabel.bounds.Y + HistoryLabel.bounds.Height + (i * 50), HistoryLabel.bounds.Width, HistoryLabel.bounds.Height), ModEntry.locateHistory[i]);
-                    listOfHistoryButtonsRects.Add(irect);
-                    listOfHistoryButtons.Add(temp);
-                    listOfHistoryButtonsText.Add(itext);
-                }
+                updateHistoryList();
 
             }
         }
@@ -316,7 +292,7 @@ namespace Item_Locator
             clearButton?.draw(b);
             clearInputButton?.draw(b);
 
-            for(int i = 0; i < listOfHistoryButtons.Count; i++)
+            for(int i = 0; i < listOfHistoryButtons.Count; i++) //draw the history buttons and item names
             {
                 ClickableTextureComponent button = listOfHistoryButtons[i];
                 button.draw(b);
@@ -366,16 +342,36 @@ namespace Item_Locator
             xPosUIHistory = xPos - 275;
             yPosUIHistory = yPos;
         }
-
+        /// <summary>
+        /// Mainly used to update config file and the History list and make sure there's only 5 items
+        /// </summary>
         private void changeLocateHistory(List<string> locHist, string item)
         {
-            Console.WriteLine("In changeLocateHistory");
             locHist.Insert(0, item);
             while (locHist.Count > 5)
             {
                 locHist.RemoveAt(locHist.Count - 1);
             }
             ModEntry.updateLocateHistory = true; //when true, it will be caught in ModEntry.RenderedWorld and is used to save the location history to config file.
+        }
+        /// <summary>
+        /// Used to reset the history lists everytime the player clicks locate so they can see the change in history in real time
+        /// </summary>
+        private void updateHistoryList()
+        {
+            listOfHistoryButtons.Clear(); //clear to prevent duplicates when reopening menu
+            listOfHistoryButtonsRects.Clear();
+            listOfHistoryButtonsText.Clear();
+            ClickableTextureComponent temp;
+            for (int i = 0; i < 5; i++)
+            {
+                temp = new ClickableTextureComponent(new Rectangle(xPosUIHistory + (16 * 2) + 15, HistoryLabel.bounds.Y + HistoryLabel.bounds.Height + (i * 50), 16, 16), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(274, 284, 16, 16), 2f);
+                Rectangle irect = new Rectangle(temp.bounds.X, temp.bounds.Y, temp.bounds.Width * (int)temp.scale, temp.bounds.Height * (int)temp.scale);
+                ClickableComponent itext = new ClickableComponent(new Rectangle(HistoryLabel.bounds.X, HistoryLabel.bounds.Y + HistoryLabel.bounds.Height + (i * 50), HistoryLabel.bounds.Width, HistoryLabel.bounds.Height), ModEntry.locateHistory[i]);
+                listOfHistoryButtonsRects.Add(irect);
+                listOfHistoryButtons.Add(temp);
+                listOfHistoryButtonsText.Add(itext);
+            }
         }
     }
 }
