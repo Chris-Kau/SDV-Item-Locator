@@ -1,7 +1,7 @@
 {
   "Name": "Item Locator",
   "Author": "MysticalAsian & mintcat3",
-  "Version": "1.0.0",
+  "Version": "1.1.1",
   "Description": "Draws the shortest distance path to every container that contains the specified item",
   "UniqueID": "mamc3.ItemLocator",
   "EntryDll": "Item Locator.dll",
