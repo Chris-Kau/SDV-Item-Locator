@@ -75,7 +75,7 @@ namespace Item_Locator
                 foreach (var tile in path)
                 {
                     Vector2 screenpos = Game1.GlobalToLocal(Game1.viewport, tile * Game1.tileSize);
-                    e.SpriteBatch.Draw(tileHighlight, screenpos, pathColors[path]); //pathColors is a dict used to keep track of its distinct color
+                    e.SpriteBatch.Draw(tileHighlight, screenpos, pathColors[path] * Math.Abs(this.Config.pathTransparency - 1)); //pathColors is a dict used to keep track of its distinct color
                 }
 
             }
@@ -142,6 +142,16 @@ namespace Item_Locator
                 getValue: () => this.Config.openMenuKey,
                 setValue: value => this.Config.openMenuKey = value,
                 name: () => "Change Keybind: "
+                );
+
+            configMenu.AddNumberOption(
+                mod: this.ModManifest,
+                getValue: () => this.Config.pathTransparency,
+                setValue: value => this.Config.pathTransparency = value,
+                name: () => "Path Transparency: ",
+                min: 0,
+                max: 1,
+                interval: 0.05f
                 );
         }
     }
