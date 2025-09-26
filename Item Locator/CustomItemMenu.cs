@@ -4,17 +4,21 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewValley.Extensions;
+using System.Collections.Generic;
 namespace Item_Locator
 {
     public class CustomItemMenu : IClickableMenu
     {
+        // set of all item names, this variable is updated upon loading the game.
+        public static List<string>? itemNames;
+        static Tuple<int, int> SearchSlice = Tuple.Create(0, 0);
         public static string SearchedItem = "";
         public static string errorMessageText = "";
-        //public static Texture2D? locateButtonTexture;
+        // public static Texture2D? locateButtonTexture;
         public static ClickableTextureComponent? locateButton;
         public static ClickableTextureComponent? clearButton;
         public static ClickableTextureComponent? clearInputButton;
-        //History Buttons
+        // History Buttons
         public static List<ClickableTextureComponent> listOfHistoryButtons = new(); //used to hold the buttons of each history item
         public static List<Rectangle> listOfHistoryButtonsRects = new(); //used to detect clicks
         public static List<ClickableComponent> listOfHistoryButtonsText = new(); //used to hold the actual item names
@@ -22,7 +26,7 @@ namespace Item_Locator
         static int UIHeight = 500;
         static int UIHistoryWidth = 300;
         static int UIHistoryHeight = 500;
-        //Takes user's zoomlevel and uiscale into account to center menu based off user's settings too
+        // Takes user's zoomlevel and uiscale into account to center menu based off user's settings too
         static int xPos = (int)((Game1.viewport.Width * Game1.options.zoomLevel / Game1.options.uiScale / 2) - (UIWidth / 2));
         static int yPos = (int)((Game1.viewport.Height * Game1.options.zoomLevel / Game1.options.uiScale / 2) - UIHeight);
         static int xPosUIHistory = xPos - 275;
@@ -117,6 +121,15 @@ namespace Item_Locator
 
             if(getItem != null && getItem.Selected)
             {
+                if (itemNames != null)
+                {
+                    Tuple<int, int> WordResults = ItemListHelper.GetRange(itemNames, getItem.Text);
+                    foreach (string name in itemNames.GetRange(WordResults.Item1, WordResults.Item2 - WordResults.Item1))
+                    {
+                        Console.WriteLine(name);
+                    }
+                    Console.WriteLine("======================");
+                }
                 if (key == Keys.Escape) //ESC is now used to deselect text box while typing, and will close window if textbox is not selected
                 {
                     getItem.Selected = false;

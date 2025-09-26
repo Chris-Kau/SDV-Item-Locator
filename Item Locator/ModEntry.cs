@@ -4,6 +4,7 @@ using StardewValley;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using GenericModConfigMenu;
+using StardewValley.ItemTypeDefinitions;
 
 namespace Item_Locator
 {
@@ -125,6 +126,7 @@ namespace Item_Locator
 
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
+            CustomItemMenu.itemNames = new List<string>(ItemListHelper.GetAllItemNames());
             // get Generic Mod Config Menu's API (if it's installed)
             var configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (configMenu is null)
