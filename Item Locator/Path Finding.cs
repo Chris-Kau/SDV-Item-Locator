@@ -209,12 +209,9 @@ namespace Item_Locator
             //checking for gates because TECHNICALLY the player can walk through gates if they open it
             if (location.objects.TryGetValue(tile, out StardewValley.Object obj))
             {
-                if(obj is StardewValley.Fence fence && fence.isGate.Value)
+                if(obj is Fence fe && fe.isGate.Value)
                 {
-                    if(fence.gatePosition == StardewValley.Fence.gateOpenedPosition || fence.gatePosition == StardewValley.Fence.gateClosedPosition)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
             //checks to see if the tile x,y is on the map and if the player is able to walk through it.
