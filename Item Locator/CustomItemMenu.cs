@@ -140,7 +140,6 @@ namespace Item_Locator
                 {
                     Tuple<int, int> WordResults = ItemListHelper.GetRange(itemNames, getItem.Text);
                     AC_RecomputeIfNeeded();
-                    Console.WriteLine(itemNames.Count);
                 }
                 if (key == Keys.Escape) //ESC is now used to deselect text box while typing, and will close window if textbox is not selected
                 {
