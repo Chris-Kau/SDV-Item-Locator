@@ -107,7 +107,7 @@ namespace Item_Locator
             //Keybind O opens the search menu
             if(e.Button == this.Config.openMenuKey && Game1.activeClickableMenu is null && Context.IsPlayerFree)
             {
-                Game1.activeClickableMenu = new CustomItemMenu();
+                 Game1.activeClickableMenu = new CustomItemMenu();
             }
 
         }

@@ -9,21 +9,31 @@ namespace Item_Locator
 {
     public class CustomItemMenu : IClickableMenu
     {
+        // --- Autocomplete state (mouse + scroll only) ---
+        List<string> _acItems = new();
+        int _acScroll = 0;           // index of first visible row
+        int _acHoverRow = -1;        // 0..visibleRows-1 (relative to _acScroll)
+        int _acVisibleRows = 7;      // rows in dropdown
+        int _acRowPad = 6;           // vertical padding per row
+        string _acLastQuery = "";
+        bool _acEnabled = true;
+        bool AC_ShouldShow => _acEnabled && getItem != null && getItem.Selected && !string.IsNullOrEmpty(getItem.Text) && _acItems.Count > 0;
+
         // set of all item names, this variable is updated upon loading the game.
         public static List<string>? itemNames;
-        static Tuple<int, int> SearchSlice = Tuple.Create(0, 0);
         public static string SearchedItem = "";
         public static string errorMessageText = "";
         // public static Texture2D? locateButtonTexture;
         public static ClickableTextureComponent? locateButton;
         public static ClickableTextureComponent? clearButton;
-        public static ClickableTextureComponent? clearInputButton;
+        public static float locateButtonScale = 3f;
+        public static float clearButtonScale = 3f;
         // History Buttons
         public static List<ClickableTextureComponent> listOfHistoryButtons = new(); //used to hold the buttons of each history item
         public static List<Rectangle> listOfHistoryButtonsRects = new(); //used to detect clicks
         public static List<ClickableComponent> listOfHistoryButtonsText = new(); //used to hold the actual item names
-        static int UIWidth = 632;
-        static int UIHeight = 500;
+        static int UIWidth = 500;
+        static int UIHeight = 275;
         static int UIHistoryWidth = 300;
         static int UIHistoryHeight = 500;
         // Takes user's zoomlevel and uiscale into account to center menu based off user's settings too
@@ -38,35 +48,40 @@ namespace Item_Locator
         Rectangle getItemRect;
         Rectangle locateButtonRect;
         Rectangle clearButtonRect;
-        Rectangle clearInputButtonRect;
     public CustomItemMenu()
         {
-            //re-assign x/y pos to ensure correct scaling of game window
-            xPos = (int)((Game1.viewport.Width * Game1.options.zoomLevel / Game1.options.uiScale / 2) - (UIWidth / 2));
-            yPos = (int)((Game1.viewport.Height * Game1.options.zoomLevel / Game1.options.uiScale / 2) - UIHeight);
-            xPos = Math.Max(0, Math.Min(xPos, Game1.viewport.Width - UIWidth));
-            yPos = Math.Max(0, Math.Min(yPos, Game1.viewport.Height - UIHeight));
-            xPosUIHistory = xPos - 275;
+            int viewW = (int)(Game1.viewport.Width * Game1.options.zoomLevel / Game1.options.uiScale);
+            int viewH = (int)(Game1.viewport.Height * Game1.options.zoomLevel / Game1.options.uiScale);
+
+            int totalW = UIHistoryWidth + UIWidth;
+
+            // left edge of the combined block
+            int left = Math.Max(0, (viewW - totalW) / 2);
+
+            // set panel Xs
+            xPosUIHistory = left;
+            xPos = left + UIHistoryWidth - 32;
+
+            // keep your existing vertical behavior (or center if you prefer)
+            yPos = Math.Max(8, Math.Min((int)(viewH * 0.05f), viewH - UIHeight - 8)); // ~18% from top
             yPosUIHistory = yPos;
-            Vector2 spaceSize = Game1.smallFont.MeasureString("   "); //used to artifically justify-center for text in TitleLabel
-            TitleLabel = new ClickableComponent(new Rectangle(xPos + (UIWidth / 2) - ((UIWidth - 400) / 2) - (int)spaceSize.X, yPos + 125, UIWidth - 400, 64), "   Item Locator\nEnter Item Name:");
+
+            TitleLabel = new ClickableComponent(new Rectangle(xPos + (UIWidth / 2) - (UIWidth - 400 - 10), yPos + 108, UIWidth - 400, 64), "Item Locator");
             HistoryLabel = new ClickableComponent(new Rectangle(xPosUIHistory + (int)Game1.smallFont.MeasureString("History").X, yPosUIHistory + 125, UIHistoryWidth - 400, 64), "History:");
             getItem = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), Game1.smallFont, Game1.textColor)
             {
-                X = xPos + (UIWidth / 2) - (TitleLabel.bounds.Width / 2) - 35,
-                Y = TitleLabel.bounds.Y + TitleLabel.bounds.Height + 30,
-                Width = TitleLabel.bounds.Width,
+                X = xPos + (UIWidth / 2) - (UIWidth / 2) + 36,
+                Y = yPos + (UIHeight - 115),
+                Width = 300,
             };
             getItem.Text = SearchedItem;
 
-            locateButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) + (14 * 6), getItem.Y + 75 + (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15),6f);
+            locateButton = new ClickableTextureComponent(new Rectangle(getItem.X + 16 + getItem.Width, getItem.Y, 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(208, 321, 14, 15), locateButtonScale);
             locateButtonRect = new Rectangle(locateButton.bounds.X, locateButton.bounds.Y, locateButton.bounds.Width * (int)locateButton.scale, locateButton.bounds.Height * (int)locateButton.scale);
             
-            clearButton = new ClickableTextureComponent(new Rectangle(xPos + (UIWidth / 2) - (14 * 6 * 2), getItem.Y + 75 + (15 * 7 / 2), 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(269, 471, 14, 15), 6f);
+            clearButton = new ClickableTextureComponent(new Rectangle(getItem.X + 75 + getItem.Width, getItem.Y, 14, 15), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(269, 471, 14, 15), clearButtonScale);
             clearButtonRect = new Rectangle(clearButton.bounds.X, clearButton.bounds.Y, clearButton.bounds.Width * (int)clearButton.scale, clearButton.bounds.Height * (int)clearButton.scale);
      
-            clearInputButton = new ClickableTextureComponent(new Rectangle(getItem.X + 10 + getItem.Width, getItem.Y, 64, 64), Game1.content.Load<Texture2D>("LooseSprites\\Cursors"), new Rectangle(192,256,64,64), 0.7f);
-            clearInputButtonRect = new Rectangle(clearInputButton.bounds.X, clearInputButton.bounds.Y, (int)(clearInputButton.bounds.Width * clearInputButton.scale), (int)(clearInputButton.bounds.Height * clearInputButton.scale));
             getItem.OnEnterPressed += EnterPressed;
 
             //create 5 history buttons
@@ -124,6 +139,7 @@ namespace Item_Locator
                 if (itemNames != null)
                 {
                     Tuple<int, int> WordResults = ItemListHelper.GetRange(itemNames, getItem.Text);
+                    AC_RecomputeIfNeeded();
                     foreach (string name in itemNames.GetRange(WordResults.Item1, WordResults.Item2 - WordResults.Item1))
                     {
                         Console.WriteLine(name);
@@ -153,6 +169,21 @@ namespace Item_Locator
         /// </summary>
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
+            // detect dropdown click FIRST so outside clicks can dismiss later
+            if (AC_ShouldShow)
+            {
+                var dd = AC_GetDropdownRect();
+                if (dd.Contains(x, y))
+                {
+                    int idx = AC_PixelToIndex(y, dd);
+                    if (idx >= 0 && idx < _acItems.Count)
+                    {
+                        AC_Choose(_acItems[idx]);
+                    }
+                    return; // handled
+                }
+            }
+
             //Rectangles are used for click detection to see if the player clicked on the clickable components
             getItemRect = new Rectangle(getItem.X, getItem.Y, getItem.Width, getItem.Height);
             if (getItemRect.Contains(x, y))
@@ -163,6 +194,7 @@ namespace Item_Locator
             {
                 SearchedItem = getItem.Text;
                 getItem.Selected = false; // user is unable to type in text box
+                _acItems.Clear();
             }
             if(locateButtonRect.Contains(x, y))
             {
@@ -180,14 +212,7 @@ namespace Item_Locator
                 ModEntry.shouldDraw = false; 
                 Game1.activeClickableMenu = null; //close menu
             }
-            if(clearInputButtonRect.Contains(x,y))
-            {
-                Game1.playSound("select");
-                scaleTransition(clearInputButton, 0.67f, -0.02f);
-                scaleTransition(clearInputButton, 0.7f, 0.02f);
-                getItem.Text = "";
-                SearchedItem = "";
-            }
+           
 
             for(int i = 0; i < listOfHistoryButtons.Count; i++)
             {
@@ -238,41 +263,31 @@ namespace Item_Locator
         public override void performHoverAction(int x, int y)
         {
             base.performHoverAction(x, y);
-            if (locateButton is null || clearButton is null || clearInputButton is null)
+            if (locateButton is null || clearButton is null)
                 return;
 
             if(locateButtonRect.Contains(x,y))
             {
                 locateButton.hoverText = "Locate Item";
-                scaleTransition(locateButton, 6.3f, 0.08f); 
+                scaleTransition(locateButton, locateButtonScale + 0.3f, 0.08f); 
             }
             else
             {
                 locateButton.hoverText = "";
-                scaleTransition(locateButton, 6f, -0.08f); //6f is the original scale of the locateButton
+                scaleTransition(locateButton, locateButtonScale, -0.08f); //6f is the original scale of the locateButton
             }
 
             if(clearButtonRect.Contains(x,y))
             {
                 clearButton.hoverText = "Clear All Paths";
-                scaleTransition(clearButton, 6.3f, 0.08f);
+                scaleTransition(clearButton, clearButtonScale + 0.3f, 0.08f);
             }
             else
             {
                 clearButton.hoverText = "";
-                scaleTransition(clearButton, 6f, -0.08f);
+                scaleTransition(clearButton, clearButtonScale, -0.08f);
             }
 
-            if(clearInputButtonRect.Contains(x,y))
-            {
-                clearInputButton.hoverText = "Clear Input";
-                scaleTransition(clearInputButton, 0.73f, 0.08f);
-            }
-            else
-            {
-                clearInputButton.hoverText = "";
-                scaleTransition(clearInputButton, 0.7f, -0.08f);
-            }
             for (int i = 0; i < listOfHistoryButtons.Count; i++){
                 if (listOfHistoryButtonsRects[i].Contains(x, y))
                 {
@@ -283,11 +298,24 @@ namespace Item_Locator
                     scaleTransition(listOfHistoryButtons[i], 2f, -0.04f);
                 }
             }
-
-
-        
+            if (AC_ShouldShow)
+            {
+                var dd = AC_GetDropdownRect();
+                _acHoverRow = dd.Contains(x, y) ? AC_PixelToRow(y, dd) : -1;
+            }
 
         }
+
+        public override void receiveScrollWheelAction(int direction)
+        {
+            base.receiveScrollWheelAction(direction);
+            if (AC_ShouldShow && _acItems.Count > _acVisibleRows)
+            {
+                int delta = Math.Sign(direction); // +120 => +1, -120 => -1
+                _acScroll = Math.Clamp(_acScroll - delta, 0, Math.Max(0, _acItems.Count - _acVisibleRows));
+            }
+        }
+
         /// <summary>
         /// Draws the menu and menu components onto screen
         /// </summary>
@@ -295,15 +323,19 @@ namespace Item_Locator
         {
             b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
             Game1.drawDialogueBox(xPos, yPos, UIWidth, UIHeight, false, true);
-            Game1.drawDialogueBox(xPos - 275, yPos, 300, UIHeight, false, true);
-            Utility.drawTextWithShadow(b, TitleLabel.name, Game1.dialogueFont, new Vector2(TitleLabel.bounds.X, TitleLabel.bounds.Y), Color.Black);
+            Game1.drawDialogueBox(xPosUIHistory, yPosUIHistory, UIHistoryWidth, UIHistoryHeight, false, true);
+            var font = Game1.dialogueFont;
+            Vector2 size = font.MeasureString(TitleLabel.name);
+            // dialog has ~32px border on each side → use inner content width
+            float innerLeft = xPos + 32;
+            float innerWidth = UIWidth - 64;
+            Utility.drawTextWithShadow(b, TitleLabel.name, Game1.dialogueFont, new Vector2(innerLeft + (innerWidth - size.X) / 2f, TitleLabel.bounds.Y), Color.Black);
             Utility.drawTextWithShadow(b, HistoryLabel.name, Game1.dialogueFont, new Vector2(HistoryLabel.bounds.X, HistoryLabel.bounds.Y), Color.Black);
 
             getItem.Draw(b);
-           
+
             locateButton?.draw(b);
             clearButton?.draw(b);
-            clearInputButton?.draw(b);
 
             for(int i = 0; i < listOfHistoryButtons.Count; i++) //draw the history buttons and item names
             {
@@ -317,7 +349,7 @@ namespace Item_Locator
             if (errorMessage != null)
             {
                 Vector2 textSize = Game1.smallFont.MeasureString(errorMessageText);
-                Utility.drawTextWithShadow(b, errorMessage.name, Game1.smallFont, new Vector2(xPos + (UIWidth / 2) - (textSize.X / 2), errorMessage.bounds.Y), Color.Red);
+                Utility.drawTextWithShadow(b, errorMessage.name, Game1.smallFont, new Vector2(xPos + (UIWidth / 2) - (textSize.X / 2), locateButton.bounds.Y + 48), Color.Red);
             }
 
             //draws hovertext
@@ -329,13 +361,10 @@ namespace Item_Locator
             {
                 drawHoverText(b, clearButton.hoverText, Game1.smallFont);
             }
-            if (!string.IsNullOrEmpty(clearInputButton?.hoverText))
-            {
-                drawHoverText(b, clearInputButton.hoverText, Game1.smallFont);
-            }
 
 
-                
+            AC_Draw(b);
+
             drawMouse(b);
         }
 
@@ -344,15 +373,17 @@ namespace Item_Locator
         /// </summary>
         public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
         {
-            //resets x and y pos 
-            xPos = (int)((Game1.viewport.Width * Game1.options.zoomLevel / Game1.options.uiScale / 2) - (UIWidth / 2));
-            yPos = (int)((Game1.viewport.Height * Game1.options.zoomLevel / Game1.options.uiScale / 2) - UIHeight);
+            int viewW = (int)(Game1.viewport.Width * Game1.options.zoomLevel / Game1.options.uiScale);
+            int viewH = (int)(Game1.viewport.Height * Game1.options.zoomLevel / Game1.options.uiScale);
 
-            //ensures that it stays in the same area despire window dimensions
-            xPos = Math.Max(0, Math.Min(xPos, Game1.viewport.Width - UIWidth));
-            yPos = Math.Max(0, Math.Min(yPos, Game1.viewport.Height - UIHeight));
+            int totalW = UIHistoryWidth + UIWidth;
 
-            xPosUIHistory = xPos - 275;
+            int left = Math.Max(0, (viewW - totalW) / 2);
+
+            xPosUIHistory = left;
+            xPos = left + UIHistoryWidth - 32;
+
+            yPos = Math.Max(8, Math.Min((int)(viewH * 0.05f), viewH - UIHeight - 8)); // ~18% from top
             yPosUIHistory = yPos;
         }
         /// <summary>
@@ -366,6 +397,8 @@ namespace Item_Locator
                 locHist.RemoveAt(locHist.Count - 1);
             }
             ModEntry.updateLocateHistory = true; //when true, it will be caught in ModEntry.RenderedWorld and is used to save the location history to config file.
+            getItem.Text = "";
+            SearchedItem = "";
         }
         /// <summary>
         /// Used to reset the history lists everytime the player clicks locate so they can see the change in history in real time
@@ -386,5 +419,107 @@ namespace Item_Locator
                 listOfHistoryButtonsText.Add(itext);
             }
         }
+
+        Rectangle AC_GetDropdownRect()
+        {
+            var font = Game1.smallFont;
+            int rowHeight = font.LineSpacing + _acRowPad * 2;
+            int rows = Math.Min(_acVisibleRows, _acItems.Count);
+            int height = rows * rowHeight + 8;
+            int width = 420;
+
+            int x = Math.Clamp(getItem.X, 8, Game1.uiViewport.Width - width - 16);
+            int belowY = getItem.Y + getItem.Height + 4;
+            int aboveY = getItem.Y - height - 4;
+            int y = (belowY + height <= Game1.uiViewport.Height - 8) ? belowY : Math.Max(8, aboveY);
+
+            return new Rectangle(x, y, width, height);
+        }
+        int AC_PixelToRow(int y, Rectangle dd)
+        {
+            var font = Game1.smallFont;
+            int rowHeight = font.LineSpacing + _acRowPad * 2;
+            int innerY = y - (dd.Y + 8);
+            return innerY < 0 ? -1 : innerY / rowHeight;
+        }
+
+        int AC_PixelToIndex(int y, Rectangle dd)
+        {
+            int row = AC_PixelToRow(y, dd);
+            return (row < 0) ? -1 : _acScroll + row;
+        }
+
+        void AC_RecomputeIfNeeded()
+        {
+            string q = getItem?.Text ?? "";
+            if (q == _acLastQuery) return;
+            _acLastQuery = q;
+
+            _acItems.Clear();
+            _acScroll = 0;
+            _acHoverRow = -1;
+
+            if (string.IsNullOrWhiteSpace(q) || itemNames == null || itemNames.Count == 0)
+                return;
+
+            var slice = ItemListHelper.GetRange(itemNames, q);
+            int start = Math.Max(0, slice.Item1);
+            int count = Math.Max(0, slice.Item2 - slice.Item1);
+            int cap = 200;
+            count = Math.Min(count, cap);
+
+            if (count > 0)
+                _acItems.AddRange(itemNames.GetRange(start, count));
+        }
+
+        void AC_Draw(SpriteBatch b)
+        {
+            if (!AC_ShouldShow) return;
+
+            var dd = AC_GetDropdownRect();
+            var font = Game1.smallFont;
+            int rowHeight = font.LineSpacing + _acRowPad * 2;
+
+            IClickableMenu.drawTextureBox(
+                b, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
+                dd.X, dd.Y, dd.Width, dd.Height,
+                Color.White, 1f, false);
+
+            int xText = dd.X + 12;
+            int yStart = dd.Y + 8;
+
+            int end = Math.Min(_acItems.Count, _acScroll + _acVisibleRows);
+            for (int i = _acScroll, row = 0; i < end; i++, row++)
+            {
+                int rowY = yStart + row * rowHeight;
+
+                if (row == _acHoverRow)
+                    b.Draw(Game1.staminaRect, new Rectangle(dd.X + 4, rowY, dd.Width - 8, rowHeight), Color.Black * 0.15f);
+
+                Utility.drawTextWithShadow(b, _acItems[i], font, new Vector2(xText, rowY + _acRowPad), Game1.textColor);
+            }
+
+            if (_acItems.Count > _acVisibleRows)
+            {
+                float pct = _acScroll / (float)Math.Max(1, _acItems.Count - _acVisibleRows);
+                int barH = Math.Max(12, (int)(dd.Height * (_acVisibleRows / (float)_acItems.Count)));
+                int barY = dd.Y + 4 + (int)((dd.Height - 8 - barH) * pct);
+                b.Draw(Game1.staminaRect, new Rectangle(dd.Right - 6, barY, 2, barH), Color.White * 0.5f);
+            }
+        }
+        void AC_Choose(string value)
+        {
+            Game1.playSound("smallSelect");
+            getItem.Text = value;     
+            SearchedItem = value;
+            getItem.Selected = true;
+
+            _acItems.Clear();
+            _acHoverRow = -1;
+            _acScroll = 0;
+        }
     }
+
+
+
 }
