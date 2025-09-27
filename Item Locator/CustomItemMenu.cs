@@ -140,11 +140,7 @@ namespace Item_Locator
                 {
                     Tuple<int, int> WordResults = ItemListHelper.GetRange(itemNames, getItem.Text);
                     AC_RecomputeIfNeeded();
-                    foreach (string name in itemNames.GetRange(WordResults.Item1, WordResults.Item2 - WordResults.Item1))
-                    {
-                        Console.WriteLine(name);
-                    }
-                    Console.WriteLine("======================");
+                    Console.WriteLine(itemNames.Count);
                 }
                 if (key == Keys.Escape) //ESC is now used to deselect text box while typing, and will close window if textbox is not selected
                 {
@@ -501,10 +497,35 @@ namespace Item_Locator
 
             if (_acItems.Count > _acVisibleRows)
             {
-                float pct = _acScroll / (float)Math.Max(1, _acItems.Count - _acVisibleRows);
-                int barH = Math.Max(12, (int)(dd.Height * (_acVisibleRows / (float)_acItems.Count)));
-                int barY = dd.Y + 4 + (int)((dd.Height - 8 - barH) * pct);
-                b.Draw(Game1.staminaRect, new Rectangle(dd.Right - 6, barY, 2, barH), Color.White * 0.5f);
+                // Layout
+                int scPad = 4;   // padding to panel edge
+                int scW = 7;  // scrollbar thickness (make this larger to taste)
+                               // Track rect
+                Rectangle track = new Rectangle(
+                    dd.Right - scW - scPad,
+                    dd.Y + scPad,
+                    scW,
+                    dd.Height - scPad * 2
+                );
+
+                // Draw track (subtle)
+                b.Draw(Game1.staminaRect, track, Color.Black * 0.25f);
+
+                // Thumb size & position
+                int rowsVisible = Math.Min(_acVisibleRows, _acItems.Count);
+                float fracVisible = rowsVisible / (float)_acItems.Count;                 // how much content is visible
+                int thumbH = Math.Max(22, (int)(track.Height * fracVisible));            // enforce a minimum thumb size
+                float scrollable = Math.Max(1, _acItems.Count - rowsVisible);            // avoid /0
+                float scrollPct = _acScroll / scrollable;                                // 0..1
+                int thumbY = track.Y + (int)((track.Height - thumbH) * scrollPct);
+
+                // Optional: a 1px border behind the thumb to increase contrast
+                Rectangle thumbBorder = new Rectangle(track.X - 1, thumbY - 1, track.Width + 2, thumbH + 2);
+                b.Draw(Game1.staminaRect, thumbBorder, Color.Black * 0.35f);
+
+                // Thumb
+                Rectangle thumb = new Rectangle(track.X, thumbY, track.Width, thumbH);
+                b.Draw(Game1.staminaRect, thumb, Color.RosyBrown * 0.85f);
             }
         }
         void AC_Choose(string value)
