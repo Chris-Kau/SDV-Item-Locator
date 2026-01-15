@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using StardewValley.Extensions;
+using StardewValley.GameData.BigCraftables;
 
 namespace Item_Locator
 {
@@ -17,8 +19,7 @@ namespace Item_Locator
         {
             var names = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
             var objectDef = ItemRegistry.GetObjectTypeDefinition();
-
-            // 1) Base items, with fixes:
+            // Base items:
             foreach (var def in ItemRegistry.ItemTypes)
             {
                 foreach (string qid in def.GetAllIds())
@@ -50,8 +51,16 @@ namespace Item_Locator
                         names.Add(it.DisplayName);
                 }
             }
-
-            // 2) Flavored / variant object names via 1.6 helpers:
+            // Big Craftables
+            var bigCraftables = ItemRegistry.GetTypeDefinition(ItemRegistry.type_bigCraftable);
+            if (bigCraftables is not null)
+            {
+                foreach (ParsedItemData data in bigCraftables.GetAllData())
+                {
+                    names.Add(data.DisplayName);
+                }
+            }
+            // Flavored / variant object names
             foreach (string qid in objectDef.GetAllIds())
             {
                 if (ItemRegistry.Create(qid) is not SObject item)
@@ -111,7 +120,7 @@ namespace Item_Locator
                         }
                 }
 
-                // Extra coverage via tags:
+                // Extra coverage via tags
                 if (!createdJuice && item.HasContextTag("keg_juice"))
                     AddName(objectDef.CreateFlavoredJuice(item));
 
