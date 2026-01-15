@@ -1,13 +1,6 @@
 ﻿using StardewValley;
 using StardewValley.ItemTypeDefinitions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using StardewValley.Extensions;
-using StardewValley.GameData.BigCraftables;
 
 namespace Item_Locator
 {
@@ -19,45 +12,13 @@ namespace Item_Locator
         {
             var names = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
             var objectDef = ItemRegistry.GetObjectTypeDefinition();
-            // Base items:
+            // Base items 
             foreach (var def in ItemRegistry.ItemTypes)
             {
-                foreach (string qid in def.GetAllIds())
+                foreach (ParsedItemData data in def.GetAllData())
                 {
-                    var it = ItemRegistry.Create(qid);
-
-                    // Skip placeholder flavored bases; we'll add real flavored outputs below.
-                    if (it is SObject so &&
-                        (so.QualifiedItemId == "(O)DriedFruit"
-                      || so.QualifiedItemId == "(O)DriedMushrooms"
-                      || so.QualifiedItemId == "(O)SmokedFish"
-                      || so.QualifiedItemId == "(O)SpecificBait"))
-                        continue;
-
-                    // Replace base Honey with Wild Honey.
-                    // Handle both QID notations and legacy PSI check to be safe.
-                    if (it is SObject honeyCandidate &&
-                        (honeyCandidate.ParentSheetIndex == 340
-                         || qid.EndsWith(")340", StringComparison.Ordinal)
-                         || qid.EndsWith(":340", StringComparison.Ordinal)))
-                    {
-                        var wild = objectDef.CreateFlavoredHoney(null); // -> "Wild Honey"
-                        if (wild != null && !string.IsNullOrEmpty(wild.DisplayName))
-                            names.Add(wild.DisplayName);
-                        continue; // don't add plain "Honey"
-                    }
-
-                    if (it != null && !string.IsNullOrEmpty(it.DisplayName))
-                        names.Add(it.DisplayName);
-                }
-            }
-            // Big Craftables
-            var bigCraftables = ItemRegistry.GetTypeDefinition(ItemRegistry.type_bigCraftable);
-            if (bigCraftables is not null)
-            {
-                foreach (ParsedItemData data in bigCraftables.GetAllData())
-                {
-                    names.Add(data.DisplayName);
+                    if(!string.IsNullOrEmpty(data.DisplayName))
+                        names.Add(data.DisplayName);
                 }
             }
             // Flavored / variant object names
@@ -134,7 +95,6 @@ namespace Item_Locator
 
             // Ensure Wild Honey is present even if the base-loop logic didn’t trigger for some reason
             AddName(objectDef.CreateFlavoredHoney(null));
-
             return names;
 
             void AddName(Item? it)
