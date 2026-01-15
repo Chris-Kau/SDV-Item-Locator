@@ -14,8 +14,10 @@ namespace Item_Locator
         /// </summary>
         public static List<Vector2> get_container_locs(GameLocation location, string i)
         {
-            getJunimoHutTiles(location, i);
             List<Vector2> chest_locs = new();
+            if (location is null || string.IsNullOrWhiteSpace(i))
+                return chest_locs;
+            
             Vector2? farmFridge = getHouseFridgeTile(location, i);
             List<Vector2> junimoHutsLocations = getJunimoHutTiles(location, i);
             //add fridges and junimo huts to the container locations
@@ -23,40 +25,43 @@ namespace Item_Locator
                 chest_locs.Add((Vector2)farmFridge);
             if (junimoHutsLocations != null)
                 chest_locs.AddRange(junimoHutsLocations);
-            //first 2 for loops loop through all tiles on player's location map
-            for (int x = 0; x < location.map.Layers[0].LayerWidth; x++)
+
+            foreach (var pair in location.Objects.Pairs)
             {
-                for(int y = 0; y < location.map.Layers[0].LayerHeight; y++)
+                Vector2 tile = pair.Key;
+
+                if (pair.Value is not StardewValley.Objects.Chest chest)
+                    continue;
+                // Junimo Chests
+                if (string.Equals(chest.Name, "Junimo Chest", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(chest.name, "Junimo Chest", StringComparison.OrdinalIgnoreCase))
                 {
-                    //checks to see if the there is an object at x,y and checks to see if there is a chest object on said tile.
-                    if(location.objects.ContainsKey(new Vector2(x, y)) && location.Objects[new Vector2(x,y)] is StardewValley.Objects.Chest chest)
+                    var team = Game1.player?.team;
+                    var inv = team?.GetOrCreateGlobalInventory("JunimoChests");
+                    if (inv is null) continue;
+
+                    foreach (var a in inv)
                     {
-                       //if we found a match in item names, add it to the chest_locs list
-
-                        //Check for junimo chest
-                       if(chest.name == "Junimo Chest")
+                        if (a is null) continue;
+                        if (string.Equals(i, a.Name, StringComparison.OrdinalIgnoreCase))
                         {
-                            foreach (var a in Game1.player.team.GetOrCreateGlobalInventory("JunimoChests"))
-                            {
-                                if (i.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    chest_locs.Add(new Vector2(x, y));
-                                    break;
-                                }
-                            }
-                        }else
-                        {
-                            //check for other types of chests that arent junom chests
-                            foreach (Item a in chest.Items)
-                            {
-                                if (i.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    chest_locs.Add(new Vector2(x, y));
-                                    break;
-                                }
-                            }
+                            chest_locs.Add(tile);
+                            break;
                         }
-
+                    }
+                }
+                else // Any other chest objects
+                {
+                    var items = chest.Items;
+                    if (items is null) continue;
+                    foreach (var a in items)
+                    {
+                        if (a is null) continue;
+                        if (string.Equals(i, a.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            chest_locs.Add(tile);
+                            break;
+                        }
                     }
                 }
             }
